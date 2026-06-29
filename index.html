@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HYROX">
+<title>Prépa HYROX Bordeaux — Solo Open</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg-soft:#161b22; --bg-card:#1c2330; --line:#2a3340;
+    --txt:#e6edf3; --txt-dim:#9aa7b4; --txt-mut:#6b7785;
+    --accent:#ff5a1f; --accent-soft:#ff8a5c;
+    --green:#2ea043; --green-soft:#3fb950;
+    --blue:#388bfd; --yellow:#d29922; --red:#f85149; --purple:#a371f7;
+    --shadow:0 6px 24px rgba(0,0,0,.4);
+    --radius:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);line-height:1.45;
+    -webkit-font-smoothing:antialiased;padding-bottom:60px;
+  }
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+
+  /* ---------- Header ---------- */
+  header{
+    background:linear-gradient(135deg,#1a1009 0%,#0d1117 55%);
+    border-bottom:1px solid var(--line);
+    padding:26px 0 22px;position:relative;overflow:hidden;
+  }
+  header::before{
+    content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;
+    background:radial-gradient(circle,rgba(255,90,31,.22),transparent 70%);
+  }
+  .eyebrow{color:var(--accent-soft);font-weight:700;letter-spacing:2px;font-size:12px;text-transform:uppercase}
+  h1{font-size:clamp(26px,4vw,40px);font-weight:800;margin:4px 0 2px;letter-spacing:-.5px}
+  .sub{color:var(--txt-dim);font-size:15px}
+  .countdown{
+    display:flex;gap:14px;margin-top:18px;flex-wrap:wrap;
+  }
+  .cd-box{
+    background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:12px 18px;min-width:92px;text-align:center;
+  }
+  .cd-box .n{font-size:26px;font-weight:800;color:var(--accent-soft);line-height:1}
+  .cd-box .l{font-size:11px;color:var(--txt-mut);text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+
+  /* ---------- Stats ---------- */
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:22px}
+  .stat{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+  .stat .v{font-size:24px;font-weight:800}
+  .stat .k{font-size:12px;color:var(--txt-dim);margin-top:2px}
+  .progress-wrap{margin-top:18px}
+  .progress-head{display:flex;justify-content:space-between;font-size:13px;color:var(--txt-dim);margin-bottom:6px}
+  .progress-bar{height:12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green-soft));border-radius:99px;transition:width .5s ease;width:0%}
+
+  /* ---------- Controls ---------- */
+  .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:26px 0 14px;position:sticky;top:0;z-index:20;
+    background:var(--bg);padding:12px 0;border-bottom:1px solid var(--line)}
+  .seg{display:flex;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
+  .seg button{
+    background:none;border:none;color:var(--txt-dim);padding:7px 13px;border-radius:7px;
+    font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;
+  }
+  .seg button:hover{color:var(--txt)}
+  .seg button.active{background:var(--accent);color:#fff}
+  select,.btn{
+    background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
+    padding:8px 12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .btn:hover{border-color:var(--accent)}
+  .spacer{flex:1}
+
+  /* ---------- Blocks & weeks ---------- */
+  .block-banner{
+    margin:30px 0 6px;padding:14px 18px;border-radius:var(--radius);
+    border:1px solid var(--line);background:var(--bg-soft);
+    display:flex;align-items:center;gap:12px;border-left:5px solid var(--accent);
+  }
+  .block-banner h2{font-size:17px;font-weight:800}
+  .block-banner .focus{color:var(--txt-dim);font-size:13px;font-weight:500}
+  .week-label{
+    font-size:13px;font-weight:700;color:var(--txt-mut);text-transform:uppercase;letter-spacing:1.5px;
+    margin:22px 0 10px;display:flex;align-items:center;gap:10px;
+  }
+  .week-label::after{content:"";flex:1;height:1px;background:var(--line)}
+  .week-prog{font-size:11px;color:var(--txt-dim);background:var(--bg-card);border:1px solid var(--line);
+    padding:2px 9px;border-radius:99px;letter-spacing:0}
+
+  /* ---------- Session cards ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+  .card{
+    background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;transition:.2s;border-left:4px solid var(--type-color,var(--blue));
+    display:flex;flex-direction:column;
+  }
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .card.done{opacity:.92;border-left-color:var(--green)}
+  .card.done .card-top{background:linear-gradient(180deg,rgba(46,160,67,.10),transparent)}
+  .card.race{border-left-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .card-top{padding:14px 16px 12px;cursor:pointer}
+  .card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+  .date{font-size:12px;color:var(--txt-dim);font-weight:600}
+  .badges{display:flex;gap:6px;align-items:center}
+  .chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
+  .chip.type{background:var(--type-bg,rgba(56,139,253,.15));color:var(--type-color,var(--blue))}
+  .chip.pri-A{background:rgba(248,81,73,.15);color:var(--red)}
+  .chip.pri-B{background:rgba(210,153,34,.15);color:var(--yellow)}
+  .chip.pri-C{background:rgba(154,167,180,.15);color:var(--txt-dim)}
+  .card h3{font-size:15px;font-weight:700;margin:2px 0 6px}
+  .card .desc{font-size:13px;color:var(--txt-dim);margin-bottom:10px}
+  .card .facts{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--txt-mut)}
+  .card .facts b{color:var(--txt);font-weight:700}
+  .note{font-size:12px;color:var(--accent-soft);margin-top:8px;font-style:italic}
+
+  .toggle-done{
+    display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--line);
+    cursor:pointer;font-size:13px;font-weight:600;color:var(--txt-dim);user-select:none;
+  }
+  .toggle-done:hover{color:var(--txt)}
+  .check{width:20px;height:20px;border:2px solid var(--txt-mut);border-radius:6px;display:flex;
+    align-items:center;justify-content:center;transition:.15s;flex-shrink:0}
+  .card.done .check{background:var(--green);border-color:var(--green)}
+  .check svg{width:12px;height:12px;opacity:0;transition:.15s}
+  .card.done .check svg{opacity:1}
+  .card.done .toggle-done{color:var(--green-soft)}
+
+  .card h3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .see-more{font-size:12px;font-weight:700;color:var(--type-color,var(--accent-soft));margin-top:10px}
+
+  /* ---------- Tracking form (shared) ---------- */
+  .log-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .field{display:flex;flex-direction:column;gap:4px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:11px;color:var(--txt-mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .field input,.field textarea,.field select{
+    background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
+    padding:8px 10px;border-radius:8px;font-size:13px;font-family:inherit;width:100%;
+  }
+  .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent)}
+  .field textarea{resize:vertical;min-height:54px}
+  .saved-tag{font-size:11px;color:var(--green-soft);opacity:0;transition:.3s;margin-left:auto}
+  .saved-tag.show{opacity:1}
+
+  .empty{text-align:center;padding:60px 20px;color:var(--txt-mut)}
+  footer{text-align:center;color:var(--txt-mut);font-size:12px;margin-top:40px}
+
+  /* ---------- Session detail page ---------- */
+  #detailView{padding-top:18px}
+  .detail{padding-bottom:30px}
+  .detail-nav{display:flex;align-items:center;gap:8px;margin-bottom:18px}
+  .detail-hero{display:flex;gap:16px;align-items:flex-start;
+    background:linear-gradient(135deg,var(--type-bg),transparent 70%);
+    border:1px solid var(--line);border-left:5px solid var(--type-color);
+    border-radius:var(--radius);padding:18px 20px}
+  .dh-icon{font-size:40px;line-height:1;flex-shrink:0}
+  .dh-type{display:inline-block;margin-bottom:8px}
+  .detail-hero h2{font-size:22px;font-weight:800;letter-spacing:-.3px;text-transform:capitalize}
+  .dh-meta{color:var(--txt-dim);font-size:14px;font-weight:600;margin-top:4px}
+  .dh-focus{color:var(--txt-mut);font-size:13px;margin-top:4px;font-style:italic}
+
+  .dh-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin:16px 0 26px}
+  .fact{background:var(--bg-card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;
+    display:flex;flex-direction:column;gap:2px}
+  .fact span{font-size:16px}
+  .fact b{font-size:17px;font-weight:800}
+  .fact small{font-size:11px;color:var(--txt-mut);text-transform:uppercase;letter-spacing:.5px}
+  .fact.done-fact{cursor:pointer;user-select:none;transition:.15s}
+  .fact.done-fact:hover{border-color:var(--green)}
+  .fact.done-fact.on{background:rgba(46,160,67,.12);border-color:var(--green)}
+  .fact.done-fact .dcheck{width:18px;height:18px;border:2px solid var(--txt-mut);border-radius:5px;
+    display:inline-flex;align-items:center;justify-content:center}
+  .fact.done-fact.on .dcheck{background:var(--green);border-color:var(--green)}
+  .fact.done-fact .dcheck svg{width:11px;height:11px;opacity:0}
+  .fact.done-fact.on .dcheck svg{opacity:1}
+
+  .sec-title{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:1px;
+    color:var(--txt-dim);margin:26px 0 12px;display:flex;align-items:center;gap:10px}
+  .step-count{font-size:12px;font-weight:700;color:var(--type-color);background:var(--type-bg);
+    border-radius:99px;padding:2px 10px;letter-spacing:0}
+
+  .ex-list{display:flex;flex-direction:column;gap:10px}
+  .ex{display:flex;gap:12px;background:var(--bg-card);border:1px solid var(--line);
+    border-radius:12px;padding:12px 14px;transition:.15s}
+  .ex.done{background:rgba(46,160,67,.07);border-color:rgba(46,160,67,.3)}
+  .ex-check{flex-shrink:0;width:26px;height:26px;margin-top:1px;border:2px solid var(--txt-mut);
+    border-radius:7px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .ex-check:hover{border-color:var(--type-color)}
+  .ex.done .ex-check{background:var(--green);border-color:var(--green)}
+  .ex-check svg{width:14px;height:14px;opacity:0;transition:.15s}
+  .ex.done .ex-check svg{opacity:1}
+  .ex-body{flex:1;min-width:0}
+  .ex-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+  .ex-tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+    color:var(--type-color);background:var(--type-bg);padding:2px 8px;border-radius:6px}
+  .ex-name{font-size:15px;font-weight:700}
+  .ex.done .ex-name{text-decoration:line-through;color:var(--txt-dim)}
+  .mchip{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
+    background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
+    padding:2px 8px;border-radius:6px;white-space:nowrap}
+  .ex-detail{font-size:12px;color:var(--txt-mut);margin-top:5px}
+
+  .callout{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;font-size:13px;line-height:1.5}
+  .callout .co-h{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .callout.tech{background:rgba(56,139,253,.08);border-color:rgba(56,139,253,.3)}
+  .callout.tech .co-h{color:var(--blue)}
+  .callout.note-co{background:rgba(255,138,92,.08);border-color:rgba(255,90,31,.3)}
+  .callout.note-co .co-h{color:var(--accent-soft)}
+
+  .detail-foot{display:flex;justify-content:space-between;gap:10px;margin-top:30px}
+  .navbig{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+
+  @media(max-width:560px){
+    .log-grid{grid-template-columns:1fr}
+    .controls{position:static}
+    .detail-hero h2{font-size:19px}
+  }
+</style>
+</head>
+<body>
+
+<div id="listView">
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Programme 14 semaines</div>
+    <h1>Prépa HYROX Bordeaux</h1>
+    <div class="sub">Solo Open · Course le <strong id="raceDate"></strong></div>
+
+    <div class="countdown" id="countdown"></div>
+
+    <div class="progress-wrap">
+      <div class="progress-head">
+        <span>Progression du programme</span>
+        <span id="progTxt">0 / 0 séances</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+    </div>
+
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="seg" id="filterStatus">
+      <button data-f="all" class="active">Toutes</button>
+      <button data-f="todo">À faire</button>
+      <button data-f="done">Faites</button>
+    </div>
+    <select id="filterType"><option value="all">Tous les types</option></select>
+    <select id="filterBlock"><option value="all">Tous les blocs</option></select>
+    <div class="spacer"></div>
+    <button class="btn" id="exportBtn">⬇ Exporter mon suivi</button>
+  </div>
+
+  <div id="program"></div>
+
+  <footer>
+    Données de suivi enregistrées localement dans ce navigateur · Aucune donnée envoyée en ligne.
+  </footer>
+</div>
+</div>
+
+<div id="detailView" class="wrap" style="display:none"></div>
+
+<script>
+/* ---------------- Raw program data (from CSV) ---------------- */
+const CSV = `﻿Date,Jour,Semaine,Bloc,Focus semaine,Type séance,Séance prévue,Durée prévue,RPE cible,Priorité,Fait ?,Durée réelle,RPE réel,Sommeil /10,Fatigue jambes /10,Douleur /10,Golf joué ?,Score ou ressenti golf,Notes / splits
+2026-06-29,Lundi,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force jambes,"Back squat 5x5 @105 kg + Romanian deadlift 4x6 @90 kg + Bulgarian split squat 3x8/jambe avec 2x20 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,"Priorité jambes: lourd mais jamais à l'échec | Charges calculées sur 1RM: bench 135 kg, squat 145 kg, deadlift 165 kg. Sled = poids total incl. traîneau à ajuster au sol pour tenir le RPE."
+2026-06-30,Mardi,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Running seuil / intervalles,"Échauffement 15 min + éducatifs foulée 4x60 m. Intervalles: 6x800 m allure 10 km/RPE8, récup 2 min trot. Fin: 6 min easy + 4 accélérations 15s. Technique: cadence légère, épaules basses, poser sous le centre de gravité.",50-65 min,7-8,A,,,,,,,,,Noter split moyen des 800 m
+2026-07-01,Mercredi,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-07-02,Jeudi,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @75 kg + développé couché 4x6 @95 kg + rowing barre 4x8 @75 kg + sled push 6x15 m total 120 kg + sled pull 6x15 m total 80 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-07-03,Vendredi,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Zone 2,"Course Zone 2 50 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",60 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-07-04,Samedi,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",HYROX spécifique,HYROX technique 4 tours: 1 km run RPE6 + SkiErg 500 m cadence régulière + 20 wall balls 6 kg cible 3 m + 20 walking lunges sandbag 20 kg. Récup 2 min. Technique: wall ball squat complet/lancer fluide; lunges genou arrière au sol/buste haut.,55-65 min,6-7,A,,,,,,,,,Apprendre enchaînement sans se cramer
+2026-07-05,Dimanche,1,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-07-06,Lundi,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force jambes,"Back squat 5x5 @110 kg + Romanian deadlift 4x6 @90 kg + Bulgarian split squat 3x8/jambe avec 2x20 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-07-07,Mardi,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Running seuil / intervalles,"Échauffement 15 min + éducatifs foulée 4x60 m. Intervalles: 6x800 m allure 10 km/RPE8, récup 2 min trot. Fin: 6 min easy + 4 accélérations 15s. Technique: cadence légère, épaules basses, poser sous le centre de gravité.",50-65 min,7-8,A,,,,,,,,,Noter split moyen des 800 m
+2026-07-08,Mercredi,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-07-09,Jeudi,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @75 kg + développé couché 4x6 @97.5 kg + rowing barre 4x8 @75 kg + sled push 6x15 m total 125 kg + sled pull 6x15 m total 85 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-07-10,Vendredi,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Zone 2,"Course Zone 2 55 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",65 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-07-11,Samedi,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",HYROX spécifique,HYROX technique 4 tours: 1 km run RPE6 + SkiErg 500 m cadence régulière + 20 wall balls 6 kg cible 3 m + 20 walking lunges sandbag 20 kg. Récup 2 min. Technique: wall ball squat complet/lancer fluide; lunges genou arrière au sol/buste haut.,55-65 min,6-7,A,,,,,,,,,Apprendre enchaînement sans se cramer
+2026-07-12,Dimanche,2,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-07-13,Lundi,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force jambes,"Back squat 5x5 @112.5 kg + Romanian deadlift 4x6 @90 kg + Bulgarian split squat 3x8/jambe avec 2x20 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-07-14,Mardi,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Running seuil / intervalles,"Échauffement 15 min + éducatifs foulée 4x60 m. Intervalles: 6x800 m allure 10 km/RPE8, récup 2 min trot. Fin: 6 min easy + 4 accélérations 15s. Technique: cadence légère, épaules basses, poser sous le centre de gravité.",50-65 min,7-8,A,,,,,,,,,Noter split moyen des 800 m
+2026-07-15,Mercredi,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-07-16,Jeudi,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @75 kg + développé couché 4x6 @100 kg + rowing barre 4x8 @75 kg + sled push 6x15 m total 130 kg + sled pull 6x15 m total 90 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-07-17,Vendredi,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Zone 2,"Course Zone 2 60 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",70 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-07-18,Samedi,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",HYROX spécifique,HYROX technique 4 tours: 1 km run RPE6 + SkiErg 500 m cadence régulière + 20 wall balls 6 kg cible 3 m + 20 walking lunges sandbag 20 kg. Récup 2 min. Technique: wall ball squat complet/lancer fluide; lunges genou arrière au sol/buste haut.,55-65 min,6-7,A,,,,,,,,,Apprendre enchaînement sans se cramer
+2026-07-19,Dimanche,3,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-07-20,Lundi,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force jambes,"Back squat 3x5 @95 kg tempo 3s descente + Romanian deadlift 3x6 @82.5 kg + Bulgarian split squat 2x8/jambe avec 2x17.5 kg + Leg press 2x25 RPE7 + walking lunges 2x30 pas à vide. Technique: genoux alignés, pied entier au sol, buste gainé, pas d'échec.",50-60 min,6-7,A,,,,,,,,,Décharge/test technique: garder 3 reps en réserve
+2026-07-21,Mardi,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Running seuil / intervalles,"Échauffement 15 min + éducatifs foulée 4x60 m. Intervalles: 6x800 m allure 10 km/RPE8, récup 2 min trot. Fin: 6 min easy + 4 accélérations 15s. Technique: cadence légère, épaules basses, poser sous le centre de gravité.",50-65 min,7-8,A,,,,,,,,,Noter split moyen des 800 m
+2026-07-22,Mercredi,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-07-23,Jeudi,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Force haut + stations,"Tractions/row inversé 4x6-8 + développé couché 3x6 @87.5 kg + rowing haltère 3x10/bras 32 kg + sled push technique 6x15 m total 115 kg + sled pull technique 6x15 m total 75 kg + farmer carry 4x40 m 2x24 kg. Technique: puissance propre, récup complète 90-120s.",50-60 min,6-7,A,,,,,,,,,Semaine allégée: priorité technique sled
+2026-07-24,Vendredi,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Zone 2,"Course Zone 2 45 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",55 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-07-25,Samedi,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",HYROX spécifique,Test mini-Hyrox: 1 km run + SkiErg 1000 m + 1 km run + farmer carry 200 m 2x24 kg + 1 km run + 50 wall balls 6 kg. Récup libre mais chrono continu. Technique: splits réguliers.,55-70 min,7-8,A,,,,,,,,,Test bloc 1: noter temps total + station splits
+2026-07-26,Dimanche,4,Bloc 1 - Base moteur + force jambes,"Zone 2, force lourde, technique sled/lunges",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-07-27,Lundi,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force jambes,"Back squat 5x5 @112.5 kg + Romanian deadlift 4x6 @100 kg + Bulgarian split squat 3x8/jambe avec 2x22.5 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-07-28,Mardi,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Running seuil / intervalles,"Échauffement 15 min + 3x2 km au seuil/RPE7-8, récup 3 min trot + 6x100 m relâché. Technique: allure contrôlée, pas de sprint, viser régularité des splits.",60-70 min,7-8,A,,,,,,,,,Objectif seuil: finir capable de refaire 1 rep
+2026-07-29,Mercredi,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-07-30,Jeudi,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @80 kg + développé couché 4x6 @100 kg + rowing barre 4x8 @80 kg + sled push 6x15 m total 135 kg + sled pull 6x15 m total 92 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-07-31,Vendredi,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Zone 2,"Course Zone 2 60 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",70 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-08-01,Samedi,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",HYROX spécifique,"HYROX spécifique 5 tours: 1 km run allure Hyrox + sled push 15 m total 135 kg OU sled pull 15 m total 92 kg en alternance + 10 burpee broad jumps + 250 m row. Récup 90s. Technique: transitions calmes, repartir sans sprint.",65-75 min,7-8,A,,,,,,,,,Jambes sous fatigue contrôlée
+2026-08-02,Dimanche,5,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-08-03,Lundi,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force jambes,"Back squat 5x5 @115 kg + Romanian deadlift 4x6 @100 kg + Bulgarian split squat 3x8/jambe avec 2x22.5 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-08-04,Mardi,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Running seuil / intervalles,"Échauffement 15 min + 3x2 km au seuil/RPE7-8, récup 3 min trot + 6x100 m relâché. Technique: allure contrôlée, pas de sprint, viser régularité des splits.",60-70 min,7-8,A,,,,,,,,,Objectif seuil: finir capable de refaire 1 rep
+2026-08-05,Mercredi,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-08-06,Jeudi,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @80 kg + développé couché 4x6 @105 kg + rowing barre 4x8 @80 kg + sled push 6x15 m total 140 kg + sled pull 6x15 m total 95 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-08-07,Vendredi,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Zone 2,"Course Zone 2 65 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",75 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-08-08,Samedi,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",HYROX spécifique,"HYROX spécifique 5 tours: 1 km run allure Hyrox + sled push 15 m total 140 kg OU sled pull 15 m total 95 kg en alternance + 10 burpee broad jumps + 250 m row. Récup 90s. Technique: transitions calmes, repartir sans sprint.",65-75 min,7-8,A,,,,,,,,,Jambes sous fatigue contrôlée
+2026-08-09,Dimanche,6,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-08-10,Lundi,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force jambes,"Back squat 5x5 @120 kg + Romanian deadlift 4x6 @100 kg + Bulgarian split squat 3x8/jambe avec 2x22.5 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-08-11,Mardi,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Running seuil / intervalles,"Échauffement 15 min + 3x2 km au seuil/RPE7-8, récup 3 min trot + 6x100 m relâché. Technique: allure contrôlée, pas de sprint, viser régularité des splits.",60-70 min,7-8,A,,,,,,,,,Objectif seuil: finir capable de refaire 1 rep
+2026-08-12,Mercredi,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-08-13,Jeudi,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @80 kg + développé couché 4x6 @107.5 kg + rowing barre 4x8 @80 kg + sled push 6x15 m total 145 kg + sled pull 6x15 m total 100 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-08-14,Vendredi,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Zone 2,"Course Zone 2 70 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",80 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-08-15,Samedi,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",HYROX spécifique,"HYROX spécifique 5 tours: 1 km run allure Hyrox + sled push 15 m total 145 kg OU sled pull 15 m total 100 kg en alternance + 10 burpee broad jumps + 250 m row. Récup 90s. Technique: transitions calmes, repartir sans sprint.",65-75 min,7-8,A,,,,,,,,,Jambes sous fatigue contrôlée
+2026-08-16,Dimanche,7,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-08-17,Lundi,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force jambes,"Back squat 3x5 @97.5 kg tempo 3s descente + Romanian deadlift 3x6 @82.5 kg + Bulgarian split squat 2x8/jambe avec 2x20 kg + Leg press 2x25 RPE7 + walking lunges 2x30 pas à vide. Technique: genoux alignés, pied entier au sol, buste gainé, pas d'échec.",50-60 min,6-7,A,,,,,,,,,Décharge/test technique: garder 3 reps en réserve
+2026-08-18,Mardi,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Running seuil / intervalles,"Échauffement 15 min + 3x2 km au seuil/RPE7-8, récup 3 min trot + 6x100 m relâché. Technique: allure contrôlée, pas de sprint, viser régularité des splits.",60-70 min,7-8,A,,,,,,,,,Objectif seuil: finir capable de refaire 1 rep
+2026-08-19,Mercredi,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-08-20,Jeudi,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Force haut + stations,"Tractions/row inversé 4x6-8 + développé couché 3x6 @90 kg + rowing haltère 3x10/bras 32 kg + sled push technique 6x15 m total 125 kg + sled pull technique 6x15 m total 82 kg + farmer carry 4x40 m 2x24 kg. Technique: puissance propre, récup complète 90-120s.",50-60 min,6-7,A,,,,,,,,,Semaine allégée: priorité technique sled
+2026-08-21,Vendredi,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Zone 2,"Course Zone 2 50 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",60 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-08-22,Samedi,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",HYROX spécifique,Test 4 stations: 1 km run + sled push 50 m total 125 kg + 1 km run + sled pull 50 m total 82 kg + 1 km run + 80 m burpee broad jumps + 1 km run + row 1000 m. Chrono continu. Technique: pacing strict.,70-85 min,8,A,,,,,,,,,Test bloc 2: comparer au prochain test
+2026-08-23,Dimanche,8,Bloc 2 - Seuil + endurance musculaire,"Seuil running, jambes sous fatigue, ateliers modérés",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-08-24,Lundi,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force jambes,"Back squat 5x5 @110 kg + Romanian deadlift 4x6 @100 kg + Bulgarian split squat 3x8/jambe avec 2x22.5 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-08-25,Mardi,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Running seuil / intervalles,"Compromised run: 5 tours de 1 km course allure Hyrox cible + 20 wall balls 6 kg cible 3 m + 12 burpees broad jumps propres. Récup 90s entre tours. Technique course: relance souple après station, ne pas exploser le 1er km.",65-75 min,8,A,,,,,,,,,Noter split run après station
+2026-08-26,Mercredi,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-08-27,Jeudi,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @80 kg + développé couché 4x6 @100 kg + rowing barre 4x8 @80 kg + sled push 6x15 m total 152 kg + sled pull 6x15 m total 103 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-08-28,Vendredi,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Zone 2,"Course Zone 2 65 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",75 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-08-29,Samedi,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",HYROX spécifique,"Simulation Hyrox 6 stations: 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 152 kg + 1 km run + sled pull 50 m total 103 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg. Technique: course à allure cible, stations propres, transitions <45s.",85-105 min,8-9,A,,,,,,,,,Simulation partielle lourde
+2026-08-30,Dimanche,9,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-08-31,Lundi,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force jambes,"Back squat 5x5 @112.5 kg + Romanian deadlift 4x6 @100 kg + Bulgarian split squat 3x8/jambe avec 2x22.5 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-09-01,Mardi,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Running seuil / intervalles,"Compromised run: 5 tours de 1 km course allure Hyrox cible + 20 wall balls 6 kg cible 3 m + 12 burpees broad jumps propres. Récup 90s entre tours. Technique course: relance souple après station, ne pas exploser le 1er km.",65-75 min,8,A,,,,,,,,,Noter split run après station
+2026-09-02,Mercredi,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-09-03,Jeudi,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @80 kg + développé couché 4x6 @105 kg + rowing barre 4x8 @80 kg + sled push 6x15 m total 155 kg + sled pull 6x15 m total 105 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-09-04,Vendredi,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Zone 2,"Course Zone 2 70 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",80 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-09-05,Samedi,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",HYROX spécifique,"Simulation Hyrox 6 stations: 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 155 kg + 1 km run + sled pull 50 m total 105 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg. Technique: course à allure cible, stations propres, transitions <45s.",85-105 min,8-9,A,,,,,,,,,Simulation partielle lourde
+2026-09-06,Dimanche,10,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-09-07,Lundi,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force jambes,"Back squat 5x5 @115 kg + Romanian deadlift 4x6 @100 kg + Bulgarian split squat 3x8/jambe avec 2x22.5 kg + step-up box 50 cm 3x12/jambe avec 2x16 kg + finisher endurance: 3x30 walking lunges sandbag 20 kg, récup 90s. Technique: genou suit 2e orteil, gainage, respiration contrôlée.",60-70 min,7-8,A,,,,,,,,,Priorité jambes: lourd mais jamais à l'échec
+2026-09-08,Mardi,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Running seuil / intervalles,"Compromised run: 5 tours de 1 km course allure Hyrox cible + 20 wall balls 6 kg cible 3 m + 12 burpees broad jumps propres. Récup 90s entre tours. Technique course: relance souple après station, ne pas exploser le 1er km.",65-75 min,8,A,,,,,,,,,Noter split run après station
+2026-09-09,Mercredi,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-09-10,Jeudi,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force haut + stations,Tractions strictes 4x6-8 ou tirage vertical 4x8 @80 kg + développé couché 4x6 @107.5 kg + rowing barre 4x8 @80 kg + sled push 6x15 m total 160 kg + sled pull 6x15 m total 110 kg + farmer carry 4x40 m 2x24 kg. Technique: push hanches basses/pas courts; pull buste gainé/bras longs; farmer épaules basses.,60-70 min,7-8,A,,,,,,,,,"Stations lourdes, qualité avant vitesse"
+2026-09-11,Vendredi,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Zone 2,"Course Zone 2 75 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",85 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-09-12,Samedi,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",HYROX spécifique,"Simulation Hyrox 6 stations: 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 160 kg + 1 km run + sled pull 50 m total 110 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg. Technique: course à allure cible, stations propres, transitions <45s.",85-105 min,8-9,A,,,,,,,,,Simulation partielle lourde
+2026-09-13,Dimanche,11,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-09-14,Lundi,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force jambes,"Back squat 3x5 @102.5 kg tempo 3s descente + Romanian deadlift 3x6 @82.5 kg + Bulgarian split squat 2x8/jambe avec 2x20 kg + Leg press 2x25 RPE7 + walking lunges 2x30 pas à vide. Technique: genoux alignés, pied entier au sol, buste gainé, pas d'échec.",50-60 min,6-7,A,,,,,,,,,Décharge/test technique: garder 3 reps en réserve
+2026-09-15,Mardi,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Running seuil / intervalles,"Compromised run: 5 tours de 1 km course allure Hyrox cible + 20 wall balls 6 kg cible 3 m + 12 burpees broad jumps propres. Récup 90s entre tours. Technique course: relance souple après station, ne pas exploser le 1er km.",65-75 min,8,A,,,,,,,,,Noter split run après station
+2026-09-16,Mercredi,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-09-17,Jeudi,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Force haut + stations,"Tractions/row inversé 4x6-8 + développé couché 3x6 @95 kg + rowing haltère 3x10/bras 32 kg + sled push technique 6x15 m total 145 kg + sled pull technique 6x15 m total 95 kg + farmer carry 4x40 m 2x24 kg. Technique: puissance propre, récup complète 90-120s.",50-60 min,6-7,A,,,,,,,,,Semaine allégée: priorité technique sled
+2026-09-18,Vendredi,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Zone 2,"Course Zone 2 55 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",65 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-09-19,Samedi,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",HYROX spécifique,Simulation complète allégée 75%: 8x800 m run + Ski 1000 m + sled push 50 m 145 kg + sled pull 50 m 95 kg + burpee broad jump 60 m + row 1000 m + farmer 160 m 2x24 kg + lunges 80 m sandbag 20 kg + 75 wall balls 6 kg. Chrono continu.,90-110 min,8,A,,,,,,,,,Dernier gros spécifique
+2026-09-20,Dimanche,12,Bloc 3 - Spécifique HYROX,"Enchaînements course + stations, pacing, simulations",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-09-21,Lundi,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Force jambes,"Activation jambes: back squat 3x3 @87.5 kg vitesse max + Romanian deadlift 2x5 @75 kg + walking lunges 2x20 pas avec sandbag 20 kg + mollets 2x20. Technique: amplitude propre, aucune brûlure longue.",35-45 min,5-6,A,,,,,,,,,"Taper: sortir frais, pas de courbatures"
+2026-09-22,Mardi,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Running seuil / intervalles,"Échauffement 12 min + 4x1 km allure Hyrox cible, récup 2 min + 4x60 m. Technique: économie, respiration nasale/contrôlée sur les récupérations.",40-50 min,6-7,A,,,,,,,,,Taper: vitesse sans fatigue
+2026-09-23,Mercredi,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-09-24,Jeudi,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Force haut + stations,"Tractions strictes 3x5 lest léger ou PDC + bench press 3x4 @80 kg + rowing barre 3x8 @70 kg + sled push technique 4x15 m total 130 kg + sled pull technique 4x15 m total 85 kg + farmer carry 3x40 m 2x24 kg. Technique: sled hanches basses, bras verrouillés; pull corde à la hanche, pas courts.",40-50 min,5-6,A,,,,,,,,,"Activation haut + stations, zéro échec"
+2026-09-25,Vendredi,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Zone 2,"Course Zone 2 40 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",50 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-09-26,Samedi,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",HYROX spécifique,"Primer Hyrox: 3 tours faciles: 800 m run + 250 m SkiErg + 10 wall balls 6 kg + farmer carry 40 m 2x24 kg. Récup complète. Technique: sensations de vitesse, zéro lactate.",35-45 min,5-6,A,,,,,,,,,Affûtage
+2026-09-27,Dimanche,13,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD
+2026-09-28,Lundi,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Force jambes,"Activation jambes: back squat 3x3 @72.5 kg vitesse max + Romanian deadlift 2x5 @75 kg + walking lunges 2x20 pas avec sandbag 20 kg + mollets 2x20. Technique: amplitude propre, aucune brûlure longue.",35-45 min,5-6,A,,,,,,,,,"Taper: sortir frais, pas de courbatures"
+2026-09-29,Mardi,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Running seuil / intervalles,"Footing 20 min + 3x2 min allure Hyrox, récup 2 min facile + mobilité hanches/chevilles 10 min. Technique: relâché, aucune dette lactique.",30-40 min,4-5,A,,,,,,,,,Activation semaine course
+2026-09-30,Mercredi,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Golf / récup active,"9 trous ou practice technique golf 60-90 min + mobilité hanches/rachis thoracique 15 min + respiration 5 min. Technique golf: routine complète, équilibre finish, pas de séance physique cachée.",60-120 min,3-4,C,,,,,,,,,"Récup active, priorité fraîcheur"
+2026-10-01,Jeudi,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Force haut + stations,"Tractions strictes 3x5 lest léger ou PDC + bench press 3x4 @67.5 kg + rowing barre 3x8 @70 kg + sled push technique 4x15 m total 80 kg + sled pull technique 4x15 m total 60 kg + farmer carry 3x40 m 2x24 kg. Technique: sled hanches basses, bras verrouillés; pull corde à la hanche, pas courts.",40-50 min,5-6,A,,,,,,,,,"Activation haut + stations, zéro échec"
+2026-10-02,Vendredi,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Zone 2,"Course Zone 2 25 min, allure conversationnelle, FC basse. Fin: 6x20s lignes droites si jambes OK + mobilité mollets/ischios 10 min. Technique: cadence stable, appuis silencieux, ne jamais dériver en seuil.",35 min,4-5,A,,,,,,,,,Séance clé moteur aérobie
+2026-10-03,Samedi,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",RACE,"HYROX Bordeaux Solo Open: échauffement 20 min (footing 8 min + mobilité + 3 accélérations + 5 wall balls). Race plan: Run 1-2 contrôlés, sled sans arrêt long, burpees réguliers, relance progressive après row/farmer, wall balls en séries prévues 20/20/15/15/10/10/10.",90-120 min,9-10,A,,,,,,,,,Renseigner chrono total + splits 1 km + stations
+2026-10-04,Dimanche,14,Bloc 4 - Taper / affûtage,"Réduire volume, garder intensité, fraîcheur",Golf long / repos,"18 trous si prévu, sinon repos complet + marche 30 min. Après: mobilité 12 min mollets/quads/hanches + auto-évaluation fatigue jambes. Si fatigue jambes >7/10: repos prioritaire.",0-240 min,2-4,B,,,,,,,,,Ne pas compenser par un WOD`;
+
+/* ---------------- CSV parser (RFC-ish, handles quotes) ---------------- */
+function parseCSV(text){
+  const rows=[]; let row=[], field='', inQ=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(inQ){
+      if(c==='"'){ if(text[i+1]==='"'){field+='"';i++;} else inQ=false; }
+      else field+=c;
+    } else {
+      if(c==='"') inQ=true;
+      else if(c===','){ row.push(field); field=''; }
+      else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+      else if(c==='\r'){}
+      else field+=c;
+    }
+  }
+  if(field.length||row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+const rows = parseCSV(CSV);
+const headers = rows.shift();
+const H = {};
+headers.forEach((h,i)=>H[h.trim()]=i);
+
+const sessions = rows.filter(r=>r[H['Date']]).map((r,idx)=>({
+  id:r[H['Date']],
+  idx,
+  date:r[H['Date']],
+  jour:r[H['Jour']],
+  semaine:+r[H['Semaine']],
+  bloc:r[H['Bloc']],
+  focus:r[H['Focus semaine']],
+  type:r[H['Type séance']],
+  seance:r[H['Séance prévue']],
+  duree:r[H['Durée prévue']],
+  rpe:r[H['RPE cible']],
+  priorite:r[H['Priorité']],
+  notes:r[H['Notes / splits']]||''
+}));
+
+/* ---------------- Type styling ---------------- */
+const TYPE_STYLE = {
+  'Force jambes':        {c:'#a371f7', bg:'rgba(163,113,247,.15)', ic:'🦵'},
+  'Force haut + stations':{c:'#f778ba', bg:'rgba(247,120,186,.15)', ic:'💪'},
+  'Running seuil / intervalles':{c:'#388bfd', bg:'rgba(56,139,253,.15)', ic:'⚡'},
+  'Zone 2':              {c:'#3fb950', bg:'rgba(63,185,80,.15)', ic:'🫁'},
+  'HYROX spécifique':    {c:'#ff5a1f', bg:'rgba(255,90,31,.15)', ic:'🔥'},
+  'Golf / récup active': {c:'#56d4dd', bg:'rgba(86,212,221,.15)', ic:'⛳'},
+  'Golf long / repos':   {c:'#9aa7b4', bg:'rgba(154,167,180,.15)', ic:'😴'},
+  'RACE':                {c:'#ffd33d', bg:'rgba(255,211,61,.18)', ic:'🏁'}
+};
+function tstyle(t){ return TYPE_STYLE[t]||{c:'#388bfd',bg:'rgba(56,139,253,.15)',ic:'•'}; }
+
+/* ---------------- HTML escaping (CSV text can contain < > & ") ---------------- */
+function esc(t){ return String(t==null?'':t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------------- Parse a "Séance prévue" into structured steps ---------------- */
+// Matches metrics inside a step: ranges, sets×reps, intervals, weights, distances, durations, RPE.
+const METRIC_RX = /(\d+-\d+\s?(?:min|kg|km|m)\b)|(\d+\s?x\s?\d+\s?(?:m|km)\b)|(\d+\s?x\s?\d+(?:-\d+)?(?:\/jambe|\/bras)?)|(@\s?[\d.]+\s?kg)|((?:total|avec|sandbag|lest)\s+\d+(?:x\d+)?\s?kg)|(\d+\s?x\s?[\d.]+\s?kg)|([\d.]+\s?kg)|([\d.]+\s?(?:km|m)\b)|([\d.]+\s?min\b)|(\d+\s?s\b)|(RPE\s?\d+(?:-\d+)?)/gi;
+
+function parseStep(raw){
+  let label='';
+  const ci=raw.indexOf(': ');
+  if(ci>-1 && ci<=28 && !/\d/.test(raw.slice(0,ci))){ label=raw.slice(0,ci).trim(); raw=raw.slice(ci+2); }
+  raw=raw.trim();
+  const chips=[]; let firstIdx=-1, m;
+  METRIC_RX.lastIndex=0;
+  while((m=METRIC_RX.exec(raw))){ if(firstIdx<0) firstIdx=m.index; chips.push(m[0].replace(/\s+/g,' ').trim()); }
+  const uniq=[...new Set(chips)];
+  let name = firstIdx>0 ? raw.slice(0,firstIdx) : '';
+  name = name.replace(/[,:;\-]\s*$/,'').replace(/\s+(avec|total|de|à|au|allure|cible)\s*$/i,'')
+             .replace(/^\(+/,'').replace(/\)+$/,'').trim();
+  if(!name) name = (label || raw).replace(/^\(+/,'').replace(/\)+$/,'').trim();
+  // "extra" = leftover context after removing the name and recognised metrics
+  let extra = raw;
+  if(name && raw.indexOf(name)===0) extra = raw.slice(name.length);
+  uniq.forEach(c=>{ extra = extra.replace(c,' '); });
+  extra = extra.replace(/\s{2,}/g,' ').replace(/^[\s.;:+,\/\-]+|[\s.;:+,\/\-]+$/g,'').trim();
+  if(extra.length<3) extra='';
+  return { label: (label && label!==name)?label:'', name, chips:uniq, extra };
+}
+
+function parseSession(s){
+  let text=(s.seance||'').trim();
+  let technique='';
+  // The coaching cue is always a capitalised "Technique:" / "Technique course:" near the end
+  // (distinct from incidental lowercase "technique" inside e.g. "HYROX technique 4 tours:").
+  const t=text.match(/Technique(?:\s+\w+)?:\s*(.+)$/);
+  if(t){ technique=t[1].trim(); text=text.slice(0,t.index).trim().replace(/[.,;]\s*$/,''); }
+  // Steps are separated by " + " or by a sentence break ". " before a capital/digit.
+  const steps=text.split(/\s\+\s|\.\s+(?=[A-ZÉÀÈ0-9(])/).map(p=>p.trim()).filter(Boolean).map(parseStep);
+  return { steps, technique, note:s.notes||'' };
+}
+function prettyChip(c){ return c.replace(/^avec\s+/i,'').replace(/(\d)\s?[xX]\s?(\d)/g,'$1×$2'); }
+
+/* ---------------- Persistence ---------------- */
+const STORAGE_KEY='hyrox-bordeaux-2026';
+let log = {};
+try{ log = JSON.parse(localStorage.getItem(STORAGE_KEY))||{}; }catch(e){ log={}; }
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(log)); }
+function entry(id){ return log[id] || (log[id]={}); }
+
+/* ---------------- Race countdown ---------------- */
+const RACE_DATE = new Date('2026-10-03T09:00:00');
+document.getElementById('raceDate').textContent =
+  RACE_DATE.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+
+function renderCountdown(){
+  const now = new Date();
+  const diff = RACE_DATE - now;
+  const el = document.getElementById('countdown');
+  if(diff<=0){ el.innerHTML='<div class="cd-box"><div class="n">🏁</div><div class="l">Race day</div></div>'; return; }
+  const days=Math.floor(diff/864e5);
+  const weeks=Math.floor(days/7);
+  el.innerHTML = `
+    <div class="cd-box"><div class="n">${days}</div><div class="l">jours restants</div></div>
+    <div class="cd-box"><div class="n">${weeks}</div><div class="l">semaines</div></div>
+    <div class="cd-box"><div class="n">14</div><div class="l">sem. programme</div></div>`;
+}
+
+/* ---------------- Stats ---------------- */
+function computeStats(){
+  let done=0, rpeSum=0, rpeN=0, durSum=0, durN=0, sleepSum=0, sleepN=0, golf=0;
+  sessions.forEach(s=>{
+    const e=log[s.id]; if(!e) return;
+    if(e.done) done++;
+    const num=v=>{const n=parseFloat(String(v).replace(',','.')); return isNaN(n)?null:n;};
+    if(e.rpe!=null&&e.rpe!==''){const n=num(e.rpe); if(n!=null){rpeSum+=n;rpeN++;}}
+    if(e.duree!=null&&e.duree!==''){const n=num(e.duree); if(n!=null){durSum+=n;durN++;}}
+    if(e.sommeil!=null&&e.sommeil!==''){const n=num(e.sommeil); if(n!=null){sleepSum+=n;sleepN++;}}
+    if(e.golf==='Oui') golf++;
+  });
+  return {done, total:sessions.length,
+    avgRpe:rpeN?(rpeSum/rpeN).toFixed(1):'—',
+    totHours:durN?(durSum/60).toFixed(1):'—',
+    avgSleep:sleepN?(sleepSum/sleepN).toFixed(1):'—',
+    golf};
+}
+function renderStats(){
+  const st=computeStats();
+  const pct = st.total? Math.round(st.done/st.total*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progTxt').textContent=`${st.done} / ${st.total} séances · ${pct}%`;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="v">${st.done}<span style="font-size:14px;color:var(--txt-mut)">/${st.total}</span></div><div class="k">Séances réalisées</div></div>
+    <div class="stat"><div class="v">${st.totHours} h</div><div class="k">Volume cumulé</div></div>
+    <div class="stat"><div class="v">${st.avgRpe}</div><div class="k">RPE moyen ressenti</div></div>
+    <div class="stat"><div class="v">${st.avgSleep}</div><div class="k">Sommeil moyen /10</div></div>
+    <div class="stat"><div class="v">${st.golf}</div><div class="k">Sorties golf</div></div>`;
+}
+
+/* ---------------- Filters ---------------- */
+let filters={status:'all', type:'all', block:'all'};
+
+function populateFilters(){
+  const types=[...new Set(sessions.map(s=>s.type))];
+  const ft=document.getElementById('filterType');
+  types.forEach(t=>{ const o=document.createElement('option'); o.value=t; o.textContent=tstyle(t).ic+' '+t; ft.appendChild(o); });
+  const blocks=[...new Set(sessions.map(s=>s.bloc))];
+  const fb=document.getElementById('filterBlock');
+  blocks.forEach(b=>{ const o=document.createElement('option'); o.value=b; o.textContent=b; fb.appendChild(o); });
+}
+
+function passesFilter(s){
+  const e=log[s.id]||{};
+  if(filters.status==='done'&&!e.done) return false;
+  if(filters.status==='todo'&&e.done) return false;
+  if(filters.type!=='all'&&s.type!==filters.type) return false;
+  if(filters.block!=='all'&&s.bloc!==filters.block) return false;
+  return true;
+}
+
+/* ---------------- Render program ---------------- */
+const TODAY = '2026-06-29';
+
+function fmtDate(iso){
+  const d=new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+}
+
+function render(){
+  const container=document.getElementById('program');
+  const visible=sessions.filter(passesFilter);
+  if(!visible.length){ container.innerHTML='<div class="empty">Aucune séance ne correspond à ce filtre.</div>'; renderStats(); return; }
+  container.innerHTML = buildGrouped(visible);
+  attachHandlers();
+  renderStats();
+}
+
+function buildGrouped(visible){
+  let html=''; let curBloc=null, curWeek=null, openGrid=false;
+  const closeGrid=()=>{ if(openGrid){ html+='</div>'; openGrid=false; } };
+  visible.forEach(s=>{
+    if(s.bloc!==curBloc){
+      closeGrid(); curBloc=s.bloc; curWeek=null;
+      html+=`<div class="block-banner"><div><h2>${s.bloc}</h2><div class="focus">${s.focus}</div></div></div>`;
+    }
+    if(s.semaine!==curWeek){
+      closeGrid(); curWeek=s.semaine;
+      const wk=sessions.filter(x=>x.semaine===s.semaine);
+      const wkDone=wk.filter(x=>(log[x.id]||{}).done).length;
+      html+=`<div class="week-label">Semaine ${s.semaine}<span class="week-prog">${wkDone}/${wk.length} fait</span></div><div class="grid">`;
+      openGrid=true;
+    }
+    html+=cardHTML(s);
+  });
+  closeGrid();
+  return html;
+}
+
+function cardHTML(s){
+  const e=log[s.id]||{};
+  const ts=tstyle(s.type);
+  const done=e.done?'done':'';
+  const race=s.type==='RACE'?'race':'';
+  const isToday = s.date===TODAY ? ' style="box-shadow:0 0 0 2px var(--accent-soft)"':'';
+  const todayTag = s.date===TODAY ? " · AUJOURD'HUI" : '';
+  const nSteps=parseSession(s).steps.length;
+  const stepsDone=(e.steps?Object.values(e.steps).filter(Boolean).length:0);
+  return `
+  <div class="card ${done} ${race}" data-id="${s.id}" style="--type-color:${ts.c};--type-bg:${ts.bg}"${isToday}>
+    <div class="card-top" data-go>
+      <div class="card-meta">
+        <span class="date">${ts.ic} ${fmtDate(s.date)} · ${s.jour}${todayTag}</span>
+        <span class="badges">
+          <span class="chip type">${esc(s.type)}</span>
+          <span class="chip pri-${s.priorite}">${s.priorite}</span>
+        </span>
+      </div>
+      <h3>${esc(s.seance)}</h3>
+      <div class="facts">
+        <span>⏱ <b>${esc(s.duree)}</b></span>
+        <span>RPE <b>${esc(s.rpe)}</b></span>
+        ${nSteps>1?`<span>📋 <b>${stepsDone}/${nSteps}</b></span>`:''}
+      </div>
+      ${s.notes?`<div class="note">💡 ${esc(s.notes)}</div>`:''}
+      <div class="see-more">Voir le détail →</div>
+    </div>
+
+    <div class="toggle-done" data-toggle-done>
+      <span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></span>
+      <span>${e.done?'Séance réalisée ✓':'Marquer comme faite'}</span>
+    </div>
+  </div>`;
+}
+
+/* ---------------- List handlers ---------------- */
+function attachHandlers(){
+  document.querySelectorAll('.card').forEach(card=>{
+    const id=card.dataset.id;
+    card.querySelector('[data-go]').addEventListener('click',()=>{ location.hash='#s/'+encodeURIComponent(id); });
+    card.querySelector('[data-toggle-done]').addEventListener('click',e=>{
+      e.stopPropagation();
+      const en=entry(id); en.done=!en.done; save();
+      render();
+    });
+  });
+}
+
+/* ---------------- Session detail page ---------------- */
+function exHTML(st,i,done){
+  const chips=st.chips.map(c=>`<span class="mchip">${esc(prettyChip(c))}</span>`).join('');
+  return `<div class="ex ${done?'done':''}" data-step="${i}">
+    <button class="ex-check" data-check="${i}" aria-label="Cocher"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+    <div class="ex-body">
+      <div class="ex-head">
+        ${st.label?`<span class="ex-tag">${esc(st.label)}</span>`:''}
+        <span class="ex-name">${esc(st.name)}</span>
+        ${chips}
+      </div>
+      ${st.extra?`<div class="ex-detail">${esc(st.extra)}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function renderDetail(id){
+  const s=sessions.find(x=>x.id===id);
+  const e=log[id]||{};
+  const ts=tstyle(s.type);
+  const p=parseSession(s);
+  const idx=sessions.findIndex(x=>x.id===id);
+  const prev=sessions[idx-1], next=sessions[idx+1];
+  const stepsDone=e.steps||{};
+  const nDone=p.steps.filter((_,i)=>stepsDone[i]).length;
+  const longDate=new Date(s.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const tickSvg='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  document.getElementById('detailView').innerHTML=`
+  <div class="detail" style="--type-color:${ts.c};--type-bg:${ts.bg}">
+    <div class="detail-nav">
+      <button class="btn" data-back>← Programme</button>
+      <div class="spacer"></div>
+      <button class="btn" data-nav="prev" ${prev?'':'disabled style="opacity:.4"'}>←</button>
+      <button class="btn" data-nav="next" ${next?'':'disabled style="opacity:.4"'}>→</button>
+    </div>
+
+    <div class="detail-hero">
+      <div class="dh-icon">${ts.ic}</div>
+      <div>
+        <span class="chip type dh-type">${esc(s.type)}</span>
+        <h2>${esc(longDate)}</h2>
+        <div class="dh-meta">Semaine ${s.semaine} · ${esc(s.bloc)}</div>
+        <div class="dh-focus">${esc(s.focus)}</div>
+      </div>
+    </div>
+
+    <div class="dh-facts">
+      <div class="fact"><span>⏱</span><b>${esc(s.duree)}</b><small>Durée prévue</small></div>
+      <div class="fact"><span>🎯</span><b>RPE ${esc(s.rpe)}</b><small>Intensité cible</small></div>
+      <div class="fact"><span>🏷</span><b>Priorité ${s.priorite}</b><small>Importance</small></div>
+      <div class="fact done-fact ${e.done?'on':''}" data-done>
+        <span class="dcheck">${tickSvg}</span>
+        <b>${e.done?'Réalisée':'À faire'}</b><small>Statut — cliquer</small>
+      </div>
+    </div>
+
+    <section>
+      <h3 class="sec-title">Déroulé de la séance <span class="step-count">${nDone}/${p.steps.length}</span></h3>
+      <div class="ex-list">${p.steps.map((st,i)=>exHTML(st,i,stepsDone[i])).join('')}</div>
+    </section>
+
+    ${p.technique?`<div class="callout tech"><div class="co-h">📐 Points techniques</div><div>${esc(p.technique)}</div></div>`:''}
+    ${p.note?`<div class="callout note-co"><div class="co-h">💡 Note coach</div><div>${esc(p.note)}</div></div>`:''}
+
+    <section>
+      <h3 class="sec-title">Mon suivi <span class="saved-tag">✓ Enregistré</span></h3>
+      <div class="log-grid">
+        <div class="field"><label>Durée réelle (min)</label><input type="number" data-f="duree" value="${esc(e.duree||'')}" placeholder="${(s.duree||'').replace(/[^0-9-]/g,'')}"></div>
+        <div class="field"><label>RPE réel</label><input type="number" min="1" max="10" data-f="rpe" value="${esc(e.rpe||'')}" placeholder="${esc(s.rpe)}"></div>
+        <div class="field"><label>Sommeil /10</label><input type="number" min="0" max="10" data-f="sommeil" value="${esc(e.sommeil||'')}"></div>
+        <div class="field"><label>Fatigue jambes /10</label><input type="number" min="0" max="10" data-f="fatigue" value="${esc(e.fatigue||'')}"></div>
+        <div class="field"><label>Douleur /10</label><input type="number" min="0" max="10" data-f="douleur" value="${esc(e.douleur||'')}"></div>
+        <div class="field"><label>Golf joué ?</label><select data-f="golf"><option value="">—</option><option ${e.golf==='Oui'?'selected':''}>Oui</option><option ${e.golf==='Non'?'selected':''}>Non</option></select></div>
+        <div class="field full"><label>Score / ressenti golf</label><input type="text" data-f="golfScore" value="${esc(e.golfScore||'')}" placeholder="Score, sensations…"></div>
+        <div class="field full"><label>Notes / splits</label><textarea data-f="userNotes" placeholder="Tes splits, sensations, ajustements…">${esc(e.userNotes||'')}</textarea></div>
+      </div>
+    </section>
+
+    <div class="detail-foot">
+      ${prev?`<button class="btn navbig" data-nav="prev">← ${tstyle(prev.type).ic} ${esc(prev.jour)} (S${prev.semaine})</button>`:'<span></span>'}
+      ${next?`<button class="btn navbig" data-nav="next">${tstyle(next.type).ic} ${esc(next.jour)} (S${next.semaine}) →</button>`:'<span></span>'}
+    </div>
+  </div>`;
+
+  attachDetailHandlers(id);
+}
+
+function attachDetailHandlers(id){
+  const root=document.getElementById('detailView');
+  const idx=sessions.findIndex(x=>x.id===id);
+  root.querySelector('[data-back]').onclick=()=>{ location.hash=''; };
+  root.querySelectorAll('[data-nav]').forEach(b=>{
+    if(b.disabled) return;
+    b.onclick=()=>{ const tgt=b.dataset.nav==='prev'?sessions[idx-1]:sessions[idx+1];
+      if(tgt) location.hash='#s/'+encodeURIComponent(tgt.id); };
+  });
+  root.querySelector('[data-done]').onclick=()=>{ const en=entry(id); en.done=!en.done; save(); renderDetail(id); };
+  root.querySelectorAll('[data-check]').forEach(btn=>{
+    btn.onclick=()=>{
+      const i=+btn.dataset.check; const en=entry(id); en.steps=en.steps||{}; en.steps[i]=!en.steps[i]; save();
+      btn.closest('.ex').classList.toggle('done', !!en.steps[i]);
+      const tot=parseSession(sessions.find(x=>x.id===id)).steps.length;
+      const nd=Object.values(en.steps).filter(Boolean).length;
+      root.querySelector('.step-count').textContent=nd+'/'+tot;
+    };
+  });
+  root.querySelectorAll('[data-f]').forEach(inp=>{
+    inp.oninput=()=>{
+      const en=entry(id); en[inp.dataset.f]=inp.value; save();
+      const tag=root.querySelector('.saved-tag');
+      tag.classList.add('show'); clearTimeout(tag._t);
+      tag._t=setTimeout(()=>tag.classList.remove('show'),1200);
+    };
+  });
+}
+
+/* ---------------- Router (list <-> detail via #s/<date>) ---------------- */
+function route(){
+  const m=location.hash.match(/^#s\/(.+)$/);
+  const id=m?decodeURIComponent(m[1]):null;
+  if(id && sessions.find(s=>s.id===id)){
+    document.getElementById('listView').style.display='none';
+    document.getElementById('detailView').style.display='';
+    renderDetail(id);
+    window.scrollTo(0,0);
+  } else {
+    document.getElementById('detailView').style.display='none';
+    document.getElementById('listView').style.display='';
+    render();
+  }
+}
+window.addEventListener('hashchange', route);
+
+/* ---------------- Filter UI ---------------- */
+document.getElementById('filterStatus').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON') return;
+  document.querySelectorAll('#filterStatus button').forEach(b=>b.classList.remove('active'));
+  e.target.classList.add('active');
+  filters.status=e.target.dataset.f; render();
+});
+document.getElementById('filterType').addEventListener('change',e=>{ filters.type=e.target.value; render(); });
+document.getElementById('filterBlock').addEventListener('change',e=>{ filters.block=e.target.value; render(); });
+
+/* ---------------- Export ---------------- */
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const cols=['Date','Jour','Semaine','Bloc','Type séance','Séance prévue','Fait ?','Durée réelle','RPE réel','Sommeil /10','Fatigue jambes /10','Douleur /10','Golf joué ?','Score golf','Notes'];
+  const esc=v=>{ v=String(v??''); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
+  let out=cols.join(',')+'\n';
+  sessions.forEach(s=>{
+    const e=log[s.id]||{};
+    out+=[s.date,s.jour,s.semaine,s.bloc,s.type,s.seance,e.done?'Oui':'',e.duree||'',e.rpe||'',e.sommeil||'',e.fatigue||'',e.douleur||'',e.golf||'',e.golfScore||'',e.userNotes||''].map(esc).join(',')+'\n';
+  });
+  const blob=new Blob([out],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='suivi_hyrox_bordeaux.csv';
+  a.click();
+});
+
+/* ---------------- Init ---------------- */
+populateFilters();
+renderCountdown();
+route();
+setInterval(renderCountdown, 3600000);
+</script>
+</body>
+</html>
