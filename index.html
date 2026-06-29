@@ -19,19 +19,24 @@
     --radius:14px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--bg);color:var(--txt);line-height:1.45;
-    -webkit-font-smoothing:antialiased;padding-bottom:60px;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(40px + env(safe-area-inset-bottom));
+    -webkit-tap-highlight-color:transparent;overscroll-behavior-y:none;
   }
   a{color:inherit}
-  .wrap{max-width:1180px;margin:0 auto;padding:0 18px}
+  .wrap{max-width:1180px;margin:0 auto;
+    padding:0 max(18px,env(safe-area-inset-left)) 0 max(18px,env(safe-area-inset-right))}
 
   /* ---------- Header ---------- */
   header{
     background:linear-gradient(135deg,#1a1009 0%,#0d1117 55%);
     border-bottom:1px solid var(--line);
-    padding:26px 0 22px;position:relative;overflow:hidden;
+    padding:max(26px,calc(env(safe-area-inset-top) + 16px)) 0 22px;
+    position:relative;overflow:hidden;
   }
   header::before{
     content:"";position:absolute;right:-80px;top:-80px;width:260px;height:260px;
@@ -75,6 +80,7 @@
     padding:8px 12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;
   }
   .btn:hover{border-color:var(--accent)}
+  .btn:active{transform:scale(.96)}
   .spacer{flex:1}
 
   /* ---------- Blocks & weeks ---------- */
@@ -100,7 +106,8 @@
     overflow:hidden;transition:.2s;border-left:4px solid var(--type-color,var(--blue));
     display:flex;flex-direction:column;
   }
-  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  @media(hover:hover){ .card:hover{transform:translateY(-2px);box-shadow:var(--shadow)} }
+  .card-top:active{background:var(--bg-soft)}
   .card.done{opacity:.92;border-left-color:var(--green)}
   .card.done .card-top{background:linear-gradient(180deg,rgba(46,160,67,.10),transparent)}
   .card.race{border-left-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
@@ -141,7 +148,7 @@
   .field label{font-size:11px;color:var(--txt-mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
   .field input,.field textarea,.field select{
     background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
-    padding:8px 10px;border-radius:8px;font-size:13px;font-family:inherit;width:100%;
+    padding:10px 12px;border-radius:8px;font-size:16px;font-family:inherit;width:100%;
   }
   .field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent)}
   .field textarea{resize:vertical;min-height:54px}
@@ -187,7 +194,8 @@
 
   .ex-list{display:flex;flex-direction:column;gap:10px}
   .ex{display:flex;gap:12px;background:var(--bg-card);border:1px solid var(--line);
-    border-radius:12px;padding:12px 14px;transition:.15s}
+    border-radius:12px;padding:13px 14px;transition:.15s;cursor:pointer;-webkit-user-select:none;user-select:none}
+  .ex:active{background:var(--bg-soft)}
   .ex.done{background:rgba(46,160,67,.07);border-color:rgba(46,160,67,.3)}
   .ex-check{flex-shrink:0;width:26px;height:26px;margin-top:1px;border:2px solid var(--txt-mut);
     border-radius:7px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
@@ -217,9 +225,43 @@
   .navbig{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 
   @media(max-width:560px){
-    .log-grid{grid-template-columns:1fr}
-    .controls{position:static}
+    /* Header: tighter, app-like */
+    h1{font-size:27px}
+    .sub{font-size:13px}
+    header{padding-bottom:18px}
+    .countdown{gap:8px;margin-top:14px}
+    .cd-box{min-width:0;flex:1;padding:11px 6px}
+    .cd-box .n{font-size:21px}
+    .cd-box .l{font-size:9px;letter-spacing:.4px}
+    /* Stats: swipeable horizontal row instead of a tall grid */
+    .stats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:46%;
+      overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+      margin:16px -14px 0;padding:2px 14px 6px}
+    .stats::-webkit-scrollbar{display:none}
+    .stat{scroll-snap-align:start}
+    .progress-wrap{margin-top:16px}
+
+    /* Controls: status filter full-width, selects share a row, data buttons icon-only */
+    .controls{position:static;gap:8px;padding:12px 0}
+    .spacer{display:none}
+    .seg{flex:1 1 100%}
+    .seg button{flex:1;padding:9px 6px}
+    #filterType,#filterBlock{flex:1 1 40%;min-width:0}
+    .btn .lbl{display:none}
+    #backupBtn,#restoreBtn,#exportBtn{font-size:17px;padding:9px 13px;line-height:1}
+
+    /* Cards: single column */
+    .grid{grid-template-columns:1fr}
+
+    /* Detail page */
+    .detail-nav .btn{padding:9px 14px}
+    .detail-hero{padding:16px;gap:13px}
+    .dh-icon{font-size:34px}
     .detail-hero h2{font-size:19px}
+    .dh-facts{grid-template-columns:1fr 1fr}
+    .log-grid{grid-template-columns:1fr 1fr}
+    .log-grid .field.full{grid-column:1/-1}
+    .ex-name{font-size:14px}
   }
 </style>
 </head>
@@ -256,9 +298,9 @@
     <select id="filterType"><option value="all">Tous les types</option></select>
     <select id="filterBlock"><option value="all">Tous les blocs</option></select>
     <div class="spacer"></div>
-    <button class="btn" id="backupBtn" title="Télécharger une sauvegarde complète (JSON) à conserver">💾 Sauvegarder</button>
-    <button class="btn" id="restoreBtn" title="Restaurer depuis une sauvegarde JSON">📥 Restaurer</button>
-    <button class="btn" id="exportBtn" title="Exporter le suivi au format tableur (CSV)">⬇ CSV</button>
+    <button class="btn" id="backupBtn" title="Télécharger une sauvegarde complète (JSON) à conserver">💾<span class="lbl"> Sauvegarder</span></button>
+    <button class="btn" id="restoreBtn" title="Restaurer depuis une sauvegarde JSON">📥<span class="lbl"> Restaurer</span></button>
+    <button class="btn" id="exportBtn" title="Exporter le suivi au format tableur (CSV)">⬇<span class="lbl"> CSV</span></button>
     <input type="file" id="restoreInput" accept="application/json,.json" style="display:none">
   </div>
 
@@ -732,13 +774,13 @@ function attachDetailHandlers(id){
       if(tgt) location.hash='#s/'+encodeURIComponent(tgt.id); };
   });
   root.querySelector('[data-done]').onclick=()=>{ const en=entry(id); en.done=!en.done; save(); renderDetail(id); };
-  root.querySelectorAll('[data-check]').forEach(btn=>{
-    btn.onclick=()=>{
-      const i=+btn.dataset.check; const en=entry(id); en.steps=en.steps||{}; en.steps[i]=!en.steps[i]; save();
-      btn.closest('.ex').classList.toggle('done', !!en.steps[i]);
-      const tot=parseSession(sessions.find(x=>x.id===id)).steps.length;
+  const totSteps=parseSession(sessions.find(x=>x.id===id)).steps.length;
+  root.querySelectorAll('.ex').forEach(row=>{        // whole row is the tap target
+    row.onclick=()=>{
+      const i=+row.dataset.step; const en=entry(id); en.steps=en.steps||{}; en.steps[i]=!en.steps[i]; save();
+      row.classList.toggle('done', !!en.steps[i]);
       const nd=Object.values(en.steps).filter(Boolean).length;
-      root.querySelector('.step-count').textContent=nd+'/'+tot;
+      root.querySelector('.step-count').textContent=nd+'/'+totSteps;
     };
   });
   root.querySelectorAll('[data-f]').forEach(inp=>{
