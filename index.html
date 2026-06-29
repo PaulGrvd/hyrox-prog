@@ -256,7 +256,10 @@
     <select id="filterType"><option value="all">Tous les types</option></select>
     <select id="filterBlock"><option value="all">Tous les blocs</option></select>
     <div class="spacer"></div>
-    <button class="btn" id="exportBtn">⬇ Exporter mon suivi</button>
+    <button class="btn" id="backupBtn" title="Télécharger une sauvegarde complète (JSON) à conserver">💾 Sauvegarder</button>
+    <button class="btn" id="restoreBtn" title="Restaurer depuis une sauvegarde JSON">📥 Restaurer</button>
+    <button class="btn" id="exportBtn" title="Exporter le suivi au format tableur (CSV)">⬇ CSV</button>
+    <input type="file" id="restoreInput" accept="application/json,.json" style="display:none">
   </div>
 
   <div id="program"></div>
@@ -784,11 +787,46 @@ document.getElementById('exportBtn').addEventListener('click',()=>{
     const e=log[s.id]||{};
     out+=[s.date,s.jour,s.semaine,s.bloc,s.type,s.seance,e.done?'Oui':'',e.duree||'',e.rpe||'',e.sommeil||'',e.fatigue||'',e.douleur||'',e.golf||'',e.golfScore||'',e.userNotes||''].map(esc).join(',')+'\n';
   });
-  const blob=new Blob([out],{type:'text/csv;charset=utf-8'});
+  downloadFile('suivi_hyrox_bordeaux.csv', out, 'text/csv;charset=utf-8');
+});
+
+/* ---------------- Backup & restore (full, recoverable) ---------------- */
+function downloadFile(name, content, mime){
+  const blob=new Blob([content],{type:mime});
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='suivi_hyrox_bordeaux.csv';
-  a.click();
+  a.href=URL.createObjectURL(blob); a.download=name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+// Full JSON backup of everything you've logged (incl. per-exercise checkboxes).
+document.getElementById('backupBtn').addEventListener('click',()=>{
+  const payload={ app:'hyrox-bordeaux', key:STORAGE_KEY, savedAt:new Date().toISOString(), data:log };
+  const stamp=new Date().toISOString().slice(0,10);
+  downloadFile('sauvegarde_hyrox_'+stamp+'.json', JSON.stringify(payload,null,2), 'application/json');
+});
+
+// Restore from a JSON backup (merges: imported dates overwrite, others kept).
+document.getElementById('restoreBtn').addEventListener('click',()=>document.getElementById('restoreInput').click());
+document.getElementById('restoreInput').addEventListener('change',e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const parsed=JSON.parse(reader.result);
+      const incoming = (parsed && parsed.data && typeof parsed.data==='object') ? parsed.data
+                     : (parsed && typeof parsed==='object') ? parsed : null;
+      if(!incoming) throw new Error('format');
+      const keys=Object.keys(incoming);
+      if(!keys.length){ alert('Sauvegarde vide : rien à restaurer.'); return; }
+      const existing=Object.keys(log).length;
+      if(!confirm(`Restaurer ${keys.length} séance(s) depuis la sauvegarde ?\n\nLes séances importées remplaceront les mêmes dates (${existing} séance(s) actuellement enregistrée(s) ici).`)) return;
+      keys.forEach(k=>{ log[k]=incoming[k]; });
+      save(); route();
+      alert('Restauration terminée : '+keys.length+' séance(s) importée(s).');
+    }catch(err){ alert('Fichier invalide : ce n’est pas une sauvegarde HYROX valide.'); }
+    finally{ e.target.value=''; }
+  };
+  reader.readAsText(file);
 });
 
 /* ---------------- Init ---------------- */
