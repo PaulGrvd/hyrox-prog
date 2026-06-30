@@ -232,6 +232,32 @@
   .detail-foot{display:flex;justify-content:space-between;gap:10px;margin-top:30px}
   .navbig{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 
+  /* ---------- Calendar view ---------- */
+  .controls.cal-mode #filterStatus,
+  .controls.cal-mode #filterType,
+  .controls.cal-mode #filterBlock{display:none}
+  .cal{margin-top:6px}
+  .cal-head{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:6px 0 4px;
+    position:sticky;top:0;background:var(--bg);z-index:5}
+  .cal-head div{text-align:center;font-size:11px;font-weight:700;color:var(--txt-mut)}
+  .cal-month{font-size:13px;font-weight:800;color:var(--txt-dim);text-transform:uppercase;
+    letter-spacing:1.5px;margin:18px 0 8px}
+  .cal-row{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-bottom:5px}
+  .cal-cell{min-height:56px;background:var(--bg-card);border:1px solid var(--line);border-radius:9px;
+    padding:5px 4px;display:flex;flex-direction:column;gap:3px}
+  .cal-cell.empty{background:transparent;border-color:transparent}
+  .cal-cell.today{box-shadow:0 0 0 2px var(--accent-soft);border-color:transparent}
+  .cal-day{font-size:11px;color:var(--txt-mut);font-weight:700;line-height:1}
+  .cal-cell.today .cal-day{color:var(--accent-soft)}
+  .cal-mlbl{text-transform:uppercase;font-size:9px;letter-spacing:.3px}
+  .cal-ev{position:relative;border:none;cursor:pointer;border-radius:6px;padding:4px 0;font-size:16px;
+    line-height:1;background:var(--type-bg);border-left:3px solid var(--type-color);color:var(--txt);text-align:center}
+  .cal-ev:active{transform:scale(.94)}
+  .cal-ev.done{opacity:.5}
+  .cal-ev.done::after{content:"✓";position:absolute;top:-3px;right:-2px;font-size:9px;color:var(--green-soft)}
+  .cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:18px 2px 4px;font-size:11px;color:var(--txt-dim)}
+  .cal-legend span{display:inline-flex;align-items:center;gap:5px}
+
   @media(max-width:560px){
     /* Header: tighter, app-like */
     h1{font-size:27px}
@@ -298,6 +324,10 @@
 
 <div class="wrap">
   <div class="controls">
+    <div class="seg" id="viewToggle">
+      <button data-v="list" class="active">📋<span class="lbl"> Liste</span></button>
+      <button data-v="cal">🗓<span class="lbl"> Calendrier</span></button>
+    </div>
     <div class="seg" id="filterStatus">
       <button data-f="all" class="active">Toutes</button>
       <button data-f="todo">À faire</button>
@@ -576,8 +606,9 @@ function renderStats(){
     <div class="stat"><div class="v">${st.golf}</div><div class="k">Sorties golf</div></div>`;
 }
 
-/* ---------------- Filters ---------------- */
+/* ---------------- Filters & view mode ---------------- */
 let filters={status:'all', type:'all', block:'all'};
+let viewMode = localStorage.getItem('hyrox-viewmode')==='cal' ? 'cal' : 'list';
 
 function populateFilters(){
   const types=[...new Set(sessions.map(s=>s.type))];
@@ -621,12 +652,53 @@ function countSteps(steps){
 function effDate(s){ const e=log[s.id]; return (e&&e.movedAt)||s.date; }
 
 function render(){
+  document.querySelector('.controls').classList.toggle('cal-mode', viewMode==='cal');
+  document.querySelectorAll('#viewToggle button').forEach(b=>b.classList.toggle('active', b.dataset.v===viewMode));
   const container=document.getElementById('program');
+  if(viewMode==='cal'){ container.innerHTML=buildCalendar(); attachCalHandlers(); renderStats(); return; }
   const visible=sessions.filter(passesFilter);
   if(!visible.length){ container.innerHTML='<div class="empty">Aucune séance ne correspond à ce filtre.</div>'; renderStats(); return; }
   container.innerHTML = buildGrouped(visible);
   attachHandlers();
   renderStats();
+}
+
+/* ---------------- Calendar view (places sessions on their effective/moved date) ---------------- */
+const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const MABBR=['jan','fév','mar','avr','mai','juin','juil','aoû','sep','oct','nov','déc'];
+function dIso(d){ return d.toLocaleDateString('en-CA'); }           // local YYYY-MM-DD
+function mondayIdx(d){ return (d.getDay()+6)%7; }                    // Mon=0 … Sun=6
+function buildCalendar(){
+  const byDate={}; let min=null,max=null;
+  sessions.forEach(s=>{ const d=effDate(s); (byDate[d]=byDate[d]||[]).push(s);
+    if(!min||d<min)min=d; if(!max||d>max)max=d; });
+  const start=new Date(min+'T00:00:00'); start.setDate(start.getDate()-mondayIdx(start));
+  const end=new Date(max+'T00:00:00');   end.setDate(end.getDate()+(6-mondayIdx(end)));
+  let html='<div class="cal"><div class="cal-head">'+['L','M','M','J','V','S','D'].map(x=>`<div>${x}</div>`).join('')+'</div>';
+  const cur=new Date(start); let bandMonth=-1;
+  while(cur<=end){
+    if(cur.getMonth()!==bandMonth){ bandMonth=cur.getMonth();
+      html+=`<div class="cal-month">${MONTHS[bandMonth].charAt(0).toUpperCase()+MONTHS[bandMonth].slice(1)} ${cur.getFullYear()}</div>`; }
+    html+='<div class="cal-row">';
+    for(let i=0;i<7;i++){
+      const iso=dIso(cur), evs=byDate[iso]||[], dom=cur.getDate();
+      html+=`<div class="cal-cell${iso===TODAY?' today':''}${evs.length?'':' empty'}">`+
+        `<div class="cal-day">${dom===1?`<span class="cal-mlbl">${MABBR[cur.getMonth()]}</span> `:''}${dom}</div>`+
+        evs.map(s=>{ const ts=tstyle(s.type), e=log[s.id]||{};
+          return `<button class="cal-ev ${e.done?'done':''}" data-id="${esc(s.id)}" style="--type-color:${ts.c};--type-bg:${ts.bg}" title="${esc(s.type)} · ${jourOf(iso)} ${dom}">${ts.ic}</button>`; }).join('')+
+        '</div>';
+      cur.setDate(cur.getDate()+1);
+    }
+    html+='</div>';
+  }
+  const types=[...new Set(sessions.map(s=>s.type))];
+  html+='<div class="cal-legend">'+types.map(t=>`<span><i style="font-style:normal">${tstyle(t).ic}</i> ${esc(t)}</span>`).join('')+'</div>';
+  return html+'</div>';
+}
+function attachCalHandlers(){
+  document.querySelectorAll('.cal-ev').forEach(b=>{
+    b.addEventListener('click',()=>{ location.hash='#s/'+encodeURIComponent(b.dataset.id); });
+  });
 }
 
 function buildGrouped(visible){
@@ -850,6 +922,13 @@ function route(){
   }
 }
 window.addEventListener('hashchange', route);
+
+/* ---------------- View toggle (Liste / Calendrier) ---------------- */
+document.getElementById('viewToggle').addEventListener('click',e=>{
+  if(e.target.tagName!=='BUTTON' && !e.target.closest('button')) return;
+  const btn=e.target.closest('button'); if(!btn) return;
+  viewMode=btn.dataset.v; localStorage.setItem('hyrox-viewmode',viewMode); render();
+});
 
 /* ---------------- Filter UI ---------------- */
 document.getElementById('filterStatus').addEventListener('click',e=>{
