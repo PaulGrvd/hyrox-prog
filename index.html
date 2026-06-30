@@ -11,7 +11,7 @@
 <style>
   :root{
     --bg:#0d1117; --bg-soft:#161b22; --bg-card:#1c2330; --line:#2a3340;
-    --txt:#e6edf3; --txt-dim:#9aa7b4; --txt-mut:#6b7785;
+    --txt:#e6edf3; --txt-dim:#9aa7b4; --txt-mut:#8a97a6;
     --accent:#ff5a1f; --accent-soft:#ff8a5c;
     --green:#2ea043; --green-soft:#3fb950;
     --blue:#388bfd; --yellow:#d29922; --red:#f85149; --purple:#a371f7;
@@ -67,8 +67,8 @@
   .goal-figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:12px}
   .gf-v{font-size:22px;font-weight:800}
   .gf-v span{font-size:12px;color:var(--txt-mut);font-weight:600;margin-left:2px}
-  .gf-k{font-size:11px;color:var(--txt-dim);margin-top:2px}
-  .goal-note{font-size:11px;color:var(--txt-mut);margin-top:11px;line-height:1.5}
+  .gf-k{font-size:12px;color:var(--txt-dim);margin-top:2px}
+  .goal-note{font-size:12px;color:var(--txt-mut);margin-top:11px;line-height:1.5}
   .progress-wrap{margin-top:18px}
   .progress-head{display:flex;justify-content:space-between;font-size:13px;color:var(--txt-dim);margin-bottom:6px}
   .progress-bar{height:12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:99px;overflow:hidden}
@@ -79,7 +79,8 @@
     background:var(--bg);padding:12px 0;border-bottom:1px solid var(--line)}
   .seg{display:flex;background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;flex-wrap:wrap}
   .seg button{
-    background:none;border:none;color:var(--txt-dim);padding:7px 13px;border-radius:7px;
+    background:none;border:none;color:var(--txt-dim);padding:7px 13px;border-radius:7px;min-height:44px;
+    display:inline-flex;align-items:center;justify-content:center;gap:4px;
     font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap;
   }
   .seg button:hover{color:var(--txt)}
@@ -88,9 +89,26 @@
     background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
     padding:8px 12px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;
   }
+  .btn{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+  select{min-height:44px}
   .btn:hover{border-color:var(--accent)}
   .btn:active{transform:scale(.96)}
+  .btn:disabled,.btn[disabled]{opacity:.3;cursor:default;transform:none}
   .spacer{flex:1}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .filters-toggle{display:none}
+
+  /* ---------- Bottom navigation bar (mobile) ---------- */
+  #botbar{display:none;position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:rgba(13,17,23,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-top:1px solid var(--line);gap:6px;
+    padding:6px max(8px,env(safe-area-inset-left)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-right))}
+  #botbar button{flex:1;min-height:50px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:none;border:none;color:var(--txt-dim);font-size:11px;font-weight:600;cursor:pointer;border-radius:10px}
+  #botbar button span{font-size:19px;line-height:1}
+  #botbar button.active{color:var(--accent-soft)}
+  #botbar button:active{background:var(--bg-soft)}
+  #botbar button:disabled{opacity:.35}
 
   /* ---------- Blocks & weeks ---------- */
   .block-banner{
@@ -124,7 +142,7 @@
   .card-meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
   .date{font-size:12px;color:var(--txt-dim);font-weight:600}
   .badges{display:flex;gap:6px;align-items:center}
-  .chip{font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
+  .chip{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:.5px}
   .chip.type{background:var(--type-bg,rgba(56,139,253,.15));color:var(--type-color,var(--blue))}
   .chip.pri-A{background:rgba(248,81,73,.15);color:var(--red)}
   .chip.pri-B{background:rgba(210,153,34,.15);color:var(--yellow)}
@@ -136,7 +154,7 @@
   .note{font-size:12px;color:var(--accent-soft);margin-top:8px;font-style:italic}
 
   .toggle-done{
-    display:flex;align-items:center;gap:8px;padding:10px 16px;border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:8px;padding:11px 16px;min-height:44px;border-top:1px solid var(--line);
     cursor:pointer;font-size:13px;font-weight:600;color:var(--txt-dim);user-select:none;
   }
   .toggle-done:hover{color:var(--txt)}
@@ -217,13 +235,13 @@
   .ex.skip .ex-check .ic-skip{opacity:1}
   .ex-body{flex:1;min-width:0}
   .ex-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
-  .ex-tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+  .ex-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
     color:var(--type-color);background:var(--type-bg);padding:2px 8px;border-radius:6px}
   .ex-name{font-size:15px;font-weight:700}
   .ex.done .ex-name{text-decoration:line-through;color:var(--txt-dim)}
   .ex.skip .ex-name{text-decoration:line-through;color:var(--red)}
-  .ex-hint{font-size:11px;color:var(--txt-mut);margin:-4px 0 10px}
-  .moved{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
+  .ex-hint{font-size:12px;color:var(--txt-mut);margin:-4px 0 10px}
+  .moved{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
     color:var(--yellow);background:rgba(210,153,34,.15);padding:2px 7px;border-radius:6px;margin-left:4px}
   .moved-note{font-size:12px;color:var(--yellow);margin-top:6px}
   .mchip{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
@@ -256,15 +274,16 @@
     padding:5px 4px;display:flex;flex-direction:column;gap:3px}
   .cal-cell.empty{background:transparent;border-color:transparent}
   .cal-cell.today{box-shadow:0 0 0 2px var(--accent-soft);border-color:transparent}
-  .cal-day{font-size:11px;color:var(--txt-mut);font-weight:700;line-height:1}
+  .cal-day{font-size:12px;color:var(--txt-mut);font-weight:700;line-height:1}
   .cal-cell.today .cal-day{color:var(--accent-soft)}
-  .cal-mlbl{text-transform:uppercase;font-size:9px;letter-spacing:.3px}
-  .cal-ev{position:relative;border:none;cursor:pointer;border-radius:6px;padding:4px 0;font-size:16px;
-    line-height:1;background:var(--type-bg);border-left:3px solid var(--type-color);color:var(--txt);text-align:center}
+  .cal-mlbl{text-transform:uppercase;font-size:10px;letter-spacing:.3px}
+  .cal-ev{position:relative;border:none;cursor:pointer;border-radius:6px;min-height:36px;padding:4px 0;font-size:16px;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--type-bg);border-left:3px solid var(--type-color);color:var(--txt);text-align:center}
   .cal-ev:active{transform:scale(.94)}
   .cal-ev.done{opacity:.5}
   .cal-ev.done::after{content:"✓";position:absolute;top:-3px;right:-2px;font-size:9px;color:var(--green-soft)}
-  .cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:18px 2px 4px;font-size:11px;color:var(--txt-dim)}
+  .cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin:18px 2px 4px;font-size:12px;color:var(--txt-dim)}
   .cal-legend span{display:inline-flex;align-items:center;gap:5px}
 
   @media(max-width:560px){
@@ -275,23 +294,29 @@
     .countdown{gap:8px;margin-top:14px}
     .cd-box{min-width:0;flex:1;padding:11px 6px}
     .cd-box .n{font-size:21px}
-    .cd-box .l{font-size:9px;letter-spacing:.4px}
-    /* Stats: swipeable horizontal row instead of a tall grid */
+    .cd-box .l{font-size:10px;letter-spacing:.4px}
+    /* Stats: swipeable horizontal row, with an edge fade hinting more to scroll */
     .stats{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:46%;
       overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
-      margin:16px -14px 0;padding:2px 14px 6px}
+      margin:16px -14px 0;padding:2px 14px 6px;
+      -webkit-mask-image:linear-gradient(90deg,#000 86%,rgba(0,0,0,.12));mask-image:linear-gradient(90deg,#000 86%,rgba(0,0,0,.12))}
     .stats::-webkit-scrollbar{display:none}
     .stat{scroll-snap-align:start}
     .progress-wrap{margin-top:16px}
 
-    /* Controls: status filter full-width, selects share a row, data buttons icon-only */
+    /* Controls: view toggle moves to the bottom bar; filters collapse behind a button */
     .controls{position:static;gap:8px;padding:12px 0}
     .spacer{display:none}
+    #viewToggle{display:none}
+    .filters-toggle{display:inline-flex}
+    .filters{display:none;flex-basis:100%;gap:8px}
+    .filters.open{display:flex}
     .seg{flex:1 1 100%}
     .seg button{flex:1;padding:9px 6px}
     #filterType,#filterBlock{flex:1 1 40%;min-width:0}
     .btn .lbl{display:none}
-    #backupBtn,#restoreBtn,#exportBtn{font-size:17px;padding:9px 13px;line-height:1}
+    #backupBtn,#restoreBtn,#exportBtn,#filtersToggle{font-size:17px;padding:9px 13px}
+    #filtersToggle .lbl{display:inline}
 
     /* Cards: single column */
     .grid{grid-template-columns:1fr}
@@ -305,6 +330,15 @@
     .log-grid{grid-template-columns:1fr 1fr}
     .log-grid .field.full{grid-column:1/-1}
     .ex-name{font-size:14px}
+
+    /* Bottom bar visible on phones; reserve space so it never covers content */
+    #botbar{display:flex}
+    #listView{padding-bottom:74px}
+    .detail{padding-bottom:84px}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
   }
 </style>
 </head>
@@ -345,20 +379,23 @@
 <div class="wrap">
   <div class="controls">
     <div class="seg" id="viewToggle">
-      <button data-v="list" class="active">📋<span class="lbl"> Liste</span></button>
-      <button data-v="cal">🗓<span class="lbl"> Calendrier</span></button>
+      <button data-v="list" class="active" aria-label="Vue liste">📋<span class="lbl"> Liste</span></button>
+      <button data-v="cal" aria-label="Vue calendrier">🗓<span class="lbl"> Calendrier</span></button>
     </div>
-    <div class="seg" id="filterStatus">
-      <button data-f="all" class="active">Toutes</button>
-      <button data-f="todo">À faire</button>
-      <button data-f="done">Faites</button>
+    <button class="btn filters-toggle" id="filtersToggle" aria-expanded="false" aria-controls="filters">⚙︎<span class="lbl"> Filtres</span></button>
+    <div class="filters" id="filters">
+      <div class="seg" id="filterStatus">
+        <button data-f="all" class="active">Toutes</button>
+        <button data-f="todo">À faire</button>
+        <button data-f="done">Faites</button>
+      </div>
+      <select id="filterType" aria-label="Filtrer par type"><option value="all">Tous les types</option></select>
+      <select id="filterBlock" aria-label="Filtrer par bloc"><option value="all">Tous les blocs</option></select>
     </div>
-    <select id="filterType"><option value="all">Tous les types</option></select>
-    <select id="filterBlock"><option value="all">Tous les blocs</option></select>
     <div class="spacer"></div>
-    <button class="btn" id="backupBtn" title="Télécharger une sauvegarde complète (JSON) à conserver">💾<span class="lbl"> Sauvegarder</span></button>
-    <button class="btn" id="restoreBtn" title="Restaurer depuis une sauvegarde JSON">📥<span class="lbl"> Restaurer</span></button>
-    <button class="btn" id="exportBtn" title="Exporter le suivi au format tableur (CSV)">⬇<span class="lbl"> CSV</span></button>
+    <button class="btn" id="backupBtn" aria-label="Sauvegarder (fichier JSON)" title="Télécharger une sauvegarde complète (JSON) à conserver">💾<span class="lbl"> Sauvegarder</span></button>
+    <button class="btn" id="restoreBtn" aria-label="Restaurer depuis une sauvegarde" title="Restaurer depuis une sauvegarde JSON">📥<span class="lbl"> Restaurer</span></button>
+    <button class="btn" id="exportBtn" aria-label="Exporter en CSV" title="Exporter le suivi au format tableur (CSV)">⬇<span class="lbl"> CSV</span></button>
     <input type="file" id="restoreInput" accept="application/json,.json" style="display:none">
   </div>
 
@@ -371,6 +408,8 @@
 </div>
 
 <div id="detailView" class="wrap" style="display:none"></div>
+
+<nav id="botbar" aria-label="Navigation principale"></nav>
 
 <script>
 /* ---------------- Raw program data (from CSV) ---------------- */
@@ -671,6 +710,16 @@ function countSteps(steps){
 // effective (possibly rescheduled) date of a session
 function effDate(s){ const e=log[s.id]; return (e&&e.movedAt)||s.date; }
 
+// a11y: let role="button" divs be activated with Enter/Space
+function keyActivate(el){ el.addEventListener('keydown',ev=>{ if(ev.key==='Enter'||ev.key===' '){ ev.preventDefault(); el.click(); } }); }
+// scroll handling: remember list position when entering a session; jump to today
+let savedScroll=0, inDetail=false, firstView=true;
+function scrollToToday(){
+  const a=document.getElementById('todayAnchor');
+  if(a) a.scrollIntoView({behavior:'smooth',block:'center'});
+  else window.scrollTo({top:0,behavior:'smooth'});
+}
+
 function render(){
   document.querySelector('.controls').classList.toggle('cal-mode', viewMode==='cal');
   document.querySelectorAll('#viewToggle button').forEach(b=>b.classList.toggle('active', b.dataset.v===viewMode));
@@ -702,10 +751,10 @@ function buildCalendar(){
     html+='<div class="cal-row">';
     for(let i=0;i<7;i++){
       const iso=dIso(cur), evs=byDate[iso]||[], dom=cur.getDate();
-      html+=`<div class="cal-cell${iso===TODAY?' today':''}${evs.length?'':' empty'}">`+
+      html+=`<div class="cal-cell${iso===TODAY?' today':''}${evs.length?'':' empty'}"${iso===TODAY?' id="todayAnchor"':''}>`+
         `<div class="cal-day">${dom===1?`<span class="cal-mlbl">${MABBR[cur.getMonth()]}</span> `:''}${dom}</div>`+
         evs.map(s=>{ const ts=tstyle(s.type), e=log[s.id]||{};
-          return `<button class="cal-ev ${e.done?'done':''}" data-id="${esc(s.id)}" style="--type-color:${ts.c};--type-bg:${ts.bg}" title="${esc(s.type)} · ${jourOf(iso)} ${dom}">${ts.ic}</button>`; }).join('')+
+          return `<button class="cal-ev ${e.done?'done':''}" data-id="${esc(s.id)}" style="--type-color:${ts.c};--type-bg:${ts.bg}" aria-label="${esc(s.type)}, ${jourOf(iso)} ${dom}${e.done?', réalisée':''}" title="${esc(s.type)} · ${jourOf(iso)} ${dom}">${ts.ic}</button>`; }).join('')+
         '</div>';
       cur.setDate(cur.getDate()+1);
     }
@@ -717,7 +766,7 @@ function buildCalendar(){
 }
 function attachCalHandlers(){
   document.querySelectorAll('.cal-ev').forEach(b=>{
-    b.addEventListener('click',()=>{ location.hash='#s/'+encodeURIComponent(b.dataset.id); });
+    b.addEventListener('click',()=>{ savedScroll=window.scrollY; location.hash='#s/'+encodeURIComponent(b.dataset.id); });
   });
 }
 
@@ -754,8 +803,8 @@ function cardHTML(s){
   const nSteps=parseSession(s).steps.length;
   const stepsDone=countSteps(e.steps).done;
   return `
-  <div class="card ${done} ${race}" data-id="${s.id}" style="--type-color:${ts.c};--type-bg:${ts.bg}"${isToday}>
-    <div class="card-top" data-go>
+  <div class="card ${done} ${race}" data-id="${s.id}"${eff===TODAY?' id="todayAnchor"':''} style="--type-color:${ts.c};--type-bg:${ts.bg}"${isToday}>
+    <div class="card-top" data-go role="button" tabindex="0" aria-label="Ouvrir la séance: ${esc(s.type)}, ${moved?jourOf(eff):s.jour} ${fmtDate(eff)}">
       <div class="card-meta">
         <span class="date">${ts.ic} ${fmtDate(eff)} · ${moved?jourOf(eff):s.jour}${moved?'<span class="moved">déplacé</span>':''}${todayTag}</span>
         <span class="badges">
@@ -784,7 +833,9 @@ function cardHTML(s){
 function attachHandlers(){
   document.querySelectorAll('.card').forEach(card=>{
     const id=card.dataset.id;
-    card.querySelector('[data-go]').addEventListener('click',()=>{ location.hash='#s/'+encodeURIComponent(id); });
+    const go=card.querySelector('[data-go]');
+    go.addEventListener('click',()=>{ savedScroll=window.scrollY; location.hash='#s/'+encodeURIComponent(id); });
+    keyActivate(go);
     card.querySelector('[data-toggle-done]').addEventListener('click',e=>{
       e.stopPropagation();
       const en=entry(id); en.done=!en.done; save();
@@ -798,8 +849,9 @@ function exHTML(st,i,state){
   const chips=st.chips.map(c=>`<span class="mchip">${esc(prettyChip(c))}</span>`).join('');
   const checkSvg='<svg class="ic-done" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'+
                  '<svg class="ic-skip" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
-  return `<div class="ex ${state}" data-step="${i}">
-    <button class="ex-check" aria-label="Marquer">${checkSvg}</button>
+  const stLabel=state==='done'?'fait':state==='skip'?'non fait':'à faire';
+  return `<div class="ex ${state}" data-step="${i}" role="button" tabindex="0" aria-label="${esc(st.name)} — ${stLabel}. Appuyer pour changer">
+    <span class="ex-check" aria-hidden="true">${checkSvg}</span>
     <div class="ex-body">
       <div class="ex-head">
         ${st.label?`<span class="ex-tag">${esc(st.label)}</span>`:''}
@@ -833,8 +885,8 @@ function renderDetail(id){
     <div class="detail-nav">
       <button class="btn" data-back>← Programme</button>
       <div class="spacer"></div>
-      <button class="btn" data-nav="prev" ${prev?'':'disabled style="opacity:.4"'}>←</button>
-      <button class="btn" data-nav="next" ${next?'':'disabled style="opacity:.4"'}>→</button>
+      <button class="btn" data-nav="prev" aria-label="Séance précédente" ${prev?'':'disabled'}>←</button>
+      <button class="btn" data-nav="next" aria-label="Séance suivante" ${next?'':'disabled'}>→</button>
     </div>
 
     <div class="detail-hero">
@@ -852,9 +904,9 @@ function renderDetail(id){
       <div class="fact"><span>⏱</span><b>${esc(s.duree)}</b><small>Durée prévue</small></div>
       <div class="fact"><span>🎯</span><b>RPE ${esc(s.rpe)}</b><small>Intensité cible</small></div>
       <div class="fact"><span>🏷</span><b>Priorité ${s.priorite}</b><small>Importance</small></div>
-      <div class="fact done-fact ${e.done?'on':''}" data-done>
-        <span class="dcheck">${tickSvg}</span>
-        <b>${e.done?'Réalisée':'À faire'}</b><small>Statut — cliquer</small>
+      <div class="fact done-fact ${e.done?'on':''}" data-done role="button" tabindex="0" aria-pressed="${e.done?'true':'false'}" aria-label="Marquer la séance comme réalisée">
+        <span class="dcheck" aria-hidden="true">${tickSvg}</span>
+        <b>${e.done?'Réalisée':'À faire'}</b><small>Statut — appuyer</small>
       </div>
     </div>
 
@@ -870,15 +922,15 @@ function renderDetail(id){
     <section>
       <h3 class="sec-title">Mon suivi <span class="saved-tag">✓ Enregistré</span></h3>
       <div class="log-grid">
-        <div class="field"><label>Durée réelle (min)</label><input type="number" data-f="duree" value="${esc(e.duree||'')}" placeholder="${(s.duree||'').replace(/[^0-9-]/g,'')}"></div>
-        <div class="field"><label>RPE réel</label><input type="number" min="1" max="10" data-f="rpe" value="${esc(e.rpe||'')}" placeholder="${esc(s.rpe)}"></div>
-        <div class="field"><label>Sommeil /10</label><input type="number" min="0" max="10" data-f="sommeil" value="${esc(e.sommeil||'')}"></div>
-        <div class="field"><label>Fatigue jambes /10</label><input type="number" min="0" max="10" data-f="fatigue" value="${esc(e.fatigue||'')}"></div>
-        <div class="field"><label>Douleur /10</label><input type="number" min="0" max="10" data-f="douleur" value="${esc(e.douleur||'')}"></div>
-        <div class="field"><label>Golf joué ?</label><select data-f="golf"><option value="">—</option><option ${e.golf==='Oui'?'selected':''}>Oui</option><option ${e.golf==='Non'?'selected':''}>Non</option></select></div>
-        <div class="field full"><label>Score / ressenti golf</label><input type="text" data-f="golfScore" value="${esc(e.golfScore||'')}" placeholder="Score, sensations…"></div>
-        <div class="field full"><label>Notes / splits</label><textarea data-f="userNotes" placeholder="Tes splits, sensations, ajustements…">${esc(e.userNotes||'')}</textarea></div>
-        <div class="field full"><label>Déplacer la séance au (laisser vide = jour prévu)</label><input type="date" data-f="movedAt" value="${esc(e.movedAt||'')}"></div>
+        <div class="field"><label for="f-duree">Durée réelle (min)</label><input id="f-duree" type="number" inputmode="numeric" data-f="duree" value="${esc(e.duree||'')}" placeholder="${(s.duree||'').replace(/[^0-9-]/g,'')}"></div>
+        <div class="field"><label for="f-rpe">RPE réel</label><input id="f-rpe" type="number" inputmode="numeric" min="1" max="10" data-f="rpe" value="${esc(e.rpe||'')}" placeholder="${esc(s.rpe)}"></div>
+        <div class="field"><label for="f-sommeil">Sommeil /10</label><input id="f-sommeil" type="number" inputmode="numeric" min="0" max="10" data-f="sommeil" value="${esc(e.sommeil||'')}"></div>
+        <div class="field"><label for="f-fatigue">Fatigue jambes /10</label><input id="f-fatigue" type="number" inputmode="numeric" min="0" max="10" data-f="fatigue" value="${esc(e.fatigue||'')}"></div>
+        <div class="field"><label for="f-douleur">Douleur /10</label><input id="f-douleur" type="number" inputmode="numeric" min="0" max="10" data-f="douleur" value="${esc(e.douleur||'')}"></div>
+        <div class="field"><label for="f-golf">Golf joué ?</label><select id="f-golf" data-f="golf"><option value="">—</option><option ${e.golf==='Oui'?'selected':''}>Oui</option><option ${e.golf==='Non'?'selected':''}>Non</option></select></div>
+        <div class="field full"><label for="f-golfScore">Score / ressenti golf</label><input id="f-golfScore" type="text" data-f="golfScore" value="${esc(e.golfScore||'')}" placeholder="Score, sensations…"></div>
+        <div class="field full"><label for="f-userNotes">Notes / splits</label><textarea id="f-userNotes" data-f="userNotes" placeholder="Tes splits, sensations, ajustements…">${esc(e.userNotes||'')}</textarea></div>
+        <div class="field full"><label for="f-movedAt">Déplacer la séance au (laisser vide = jour prévu)</label><input id="f-movedAt" type="date" data-f="movedAt" value="${esc(e.movedAt||'')}"></div>
       </div>
     </section>
 
@@ -900,7 +952,9 @@ function attachDetailHandlers(id){
     b.onclick=()=>{ const tgt=b.dataset.nav==='prev'?sessions[idx-1]:sessions[idx+1];
       if(tgt) location.hash='#s/'+encodeURIComponent(tgt.id); };
   });
-  root.querySelector('[data-done]').onclick=()=>{ const en=entry(id); en.done=!en.done; save(); renderDetail(id); };
+  const doneFact=root.querySelector('[data-done]');
+  doneFact.onclick=()=>{ const en=entry(id); en.done=!en.done; save(); renderDetail(id); };
+  keyActivate(doneFact);
   const totSteps=parseSession(sessions.find(x=>x.id===id)).steps.length;
   root.querySelectorAll('.ex').forEach(row=>{        // whole row taps through: neutral → fait → non fait → neutral
     row.onclick=()=>{
@@ -910,8 +964,10 @@ function attachDetailHandlers(id){
       if(nxt==='') delete en.steps[i]; else en.steps[i]=nxt;
       save();
       row.classList.remove('done','skip'); if(nxt) row.classList.add(nxt);
+      row.setAttribute('aria-label', row.querySelector('.ex-name').textContent+' — '+(nxt==='done'?'fait':nxt==='skip'?'non fait':'à faire')+'. Appuyer pour changer');
       root.querySelector('.step-count').textContent=stepCountText(en.steps,totSteps);
     };
+    keyActivate(row);
   });
   root.querySelectorAll('[data-f]').forEach(inp=>{
     inp.oninput=()=>{
@@ -926,28 +982,64 @@ function attachDetailHandlers(id){
   });
 }
 
+/* ---------------- Bottom navigation bar (mobile, thumb zone) ---------------- */
+function renderBotbar(mode,id){
+  const bar=document.getElementById('botbar');
+  if(mode==='detail'){
+    const idx=sessions.findIndex(x=>x.id===id);
+    const prev=sessions[idx-1], next=sessions[idx+1];
+    bar.innerHTML=`
+      <button data-bb="back" aria-label="Retour au programme"><span aria-hidden="true">←</span>Retour</button>
+      <button data-bb="prev" aria-label="Séance précédente" ${prev?'':'disabled'}><span aria-hidden="true">‹</span>Précédent</button>
+      <button data-bb="next" aria-label="Séance suivante" ${next?'':'disabled'}><span aria-hidden="true">›</span>Suivant</button>`;
+    bar.querySelector('[data-bb="back"]').onclick=()=>{ location.hash=''; };
+    if(prev) bar.querySelector('[data-bb="prev"]').onclick=()=>{ location.hash='#s/'+encodeURIComponent(prev.id); };
+    if(next) bar.querySelector('[data-bb="next"]').onclick=()=>{ location.hash='#s/'+encodeURIComponent(next.id); };
+  } else {
+    bar.innerHTML=`
+      <button data-bb="list" class="${viewMode==='list'?'active':''}"><span aria-hidden="true">📋</span>Liste</button>
+      <button data-bb="cal" class="${viewMode==='cal'?'active':''}"><span aria-hidden="true">🗓</span>Calendrier</button>
+      <button data-bb="today"><span aria-hidden="true">📍</span>Aujourd'hui</button>`;
+    bar.querySelector('[data-bb="list"]').onclick=()=>setView('list');
+    bar.querySelector('[data-bb="cal"]').onclick=()=>setView('cal');
+    bar.querySelector('[data-bb="today"]').onclick=scrollToToday;
+  }
+}
+function setView(v){ viewMode=v; localStorage.setItem('hyrox-viewmode',v); render(); renderBotbar('list'); }
+
 /* ---------------- Router (list <-> detail via #s/<date>) ---------------- */
 function route(){
   const m=location.hash.match(/^#s\/(.+)$/);
   const id=m?decodeURIComponent(m[1]):null;
   if(id && sessions.find(s=>s.id===id)){
+    inDetail=true;
     document.getElementById('listView').style.display='none';
     document.getElementById('detailView').style.display='';
     renderDetail(id);
+    renderBotbar('detail', id);
     window.scrollTo(0,0);
   } else {
+    const returning=inDetail; inDetail=false;
     document.getElementById('detailView').style.display='none';
     document.getElementById('listView').style.display='';
     render();
+    renderBotbar('list');
+    if(returning){ requestAnimationFrame(()=>window.scrollTo(0,savedScroll)); }
+    else if(firstView){ firstView=false; requestAnimationFrame(()=>{ const a=document.getElementById('todayAnchor'); if(a) a.scrollIntoView({block:'center'}); }); }
   }
 }
 window.addEventListener('hashchange', route);
 
-/* ---------------- View toggle (Liste / Calendrier) ---------------- */
+/* ---------------- View toggle (Liste / Calendrier) — desktop top control ---------------- */
 document.getElementById('viewToggle').addEventListener('click',e=>{
-  if(e.target.tagName!=='BUTTON' && !e.target.closest('button')) return;
   const btn=e.target.closest('button'); if(!btn) return;
-  viewMode=btn.dataset.v; localStorage.setItem('hyrox-viewmode',viewMode); render();
+  setView(btn.dataset.v);
+});
+
+/* ---------------- Filters disclosure (mobile) ---------------- */
+document.getElementById('filtersToggle').addEventListener('click',function(){
+  const f=document.getElementById('filters'); const open=f.classList.toggle('open');
+  this.setAttribute('aria-expanded', open?'true':'false');
 });
 
 /* ---------------- Filter UI ---------------- */

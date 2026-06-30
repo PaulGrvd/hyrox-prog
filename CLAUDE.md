@@ -99,8 +99,14 @@ Tracking form (shared) · Session detail page.
 - `Session detail page` — `renderDetail()` (full session page) + `exHTML()` (one exercise row)
   + `attachDetailHandlers()` (back/prev/next nav, done toggle, per-exercise checkboxes, form inputs).
 - `Router` — `route()`, hash-based: `#s/<date>` shows the detail page, empty hash shows the list.
-  Toggles `#listView` / `#detailView`. Back button works via `hashchange`.
-- `Filter UI` — status / type / bloc filters.
+  Toggles `#listView` / `#detailView`. Back via `hashchange`. Restores list scroll on return
+  (`savedScroll`/`inDetail`) and auto-scrolls to `#todayAnchor` on first load.
+- `Bottom bar` — `#botbar` (mobile only, fixed/thumb-zone), populated by `renderBotbar(mode,id)`:
+  list/cal/aujourd'hui in list mode, retour/préc/suiv in detail. `setView()` switches Liste/Calendrier.
+- A11y: interactive `<div>`s (`card-top`, `.ex`, `.done-fact`) use `role="button"` + `tabindex` +
+  `keyActivate()` (Enter/Space). Icon-only buttons have `aria-label`. Form inputs are `for`/`id`-linked.
+  Touch targets are `min-height:44px`; `--txt-mut` is contrast-AA. Keep these when editing templates.
+- `Filter UI` — status / type / bloc filters (collapsed behind `#filtersToggle` on mobile).
 - `Export` — CSV export of tracking.
 - `Backup & restore` — `downloadFile()`; JSON backup (full `log`, incl. `steps`) and restore
   (merge: imported dates overwrite, others kept). This is the only recovery path — keep it working.
