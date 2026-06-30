@@ -259,6 +259,15 @@
   .detail-foot{display:flex;justify-content:space-between;gap:10px;margin-top:30px}
   .navbig{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
 
+  /* reschedule controls */
+  .resched-bar{display:flex;gap:8px;align-items:stretch;margin-top:12px}
+  .resched-bar .btn{flex:0 0 auto;min-width:64px;font-weight:700}
+  .resched-date{flex:1;min-width:0;background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:10px 12px;font-size:16px;min-height:44px;font-family:inherit}
+  .resched-date:focus{outline:none;border-color:var(--accent)}
+  .resched-row2{display:flex;gap:8px;margin-top:8px}
+  .resched-row2 .btn{flex:1}
+
   /* ---------- Calendar view ---------- */
   .controls.cal-mode #filterStatus,
   .controls.cal-mode #filterType,
@@ -719,6 +728,13 @@ function scrollToToday(){
   if(a) a.scrollIntoView({behavior:'smooth',block:'center'});
   else window.scrollTo({top:0,behavior:'smooth'});
 }
+function shiftDate(iso,days){ const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+days); return d.toLocaleDateString('en-CA'); }
+// "Aujourd'hui": open the session scheduled for today (its detail), else scroll to it
+function goToday(){
+  const t=sessions.filter(s=>effDate(s)===TODAY);
+  if(t.length) location.hash='#s/'+encodeURIComponent(t[0].id);
+  else scrollToToday();
+}
 
 function render(){
   document.querySelector('.controls').classList.toggle('cal-mode', viewMode==='cal');
@@ -930,7 +946,19 @@ function renderDetail(id){
         <div class="field"><label for="f-golf">Golf joué ?</label><select id="f-golf" data-f="golf"><option value="">—</option><option ${e.golf==='Oui'?'selected':''}>Oui</option><option ${e.golf==='Non'?'selected':''}>Non</option></select></div>
         <div class="field full"><label for="f-golfScore">Score / ressenti golf</label><input id="f-golfScore" type="text" data-f="golfScore" value="${esc(e.golfScore||'')}" placeholder="Score, sensations…"></div>
         <div class="field full"><label for="f-userNotes">Notes / splits</label><textarea id="f-userNotes" data-f="userNotes" placeholder="Tes splits, sensations, ajustements…">${esc(e.userNotes||'')}</textarea></div>
-        <div class="field full"><label for="f-movedAt">Déplacer la séance au (laisser vide = jour prévu)</label><input id="f-movedAt" type="date" data-f="movedAt" value="${esc(e.movedAt||'')}"></div>
+      </div>
+    </section>
+
+    <section>
+      <h3 class="sec-title">📅 Reprogrammer</h3>
+      <div class="resched-bar">
+        <button class="btn" data-resched="-1" aria-label="Reculer d'un jour">−1 j</button>
+        <input type="date" id="f-movedAt" class="resched-date" value="${esc(eff)}" aria-label="Date de la séance">
+        <button class="btn" data-resched="1" aria-label="Avancer d'un jour">+1 j</button>
+      </div>
+      <div class="resched-row2">
+        <button class="btn" data-resched="today">📍 Aujourd'hui</button>
+        <button class="btn" data-resched="reset" ${moved?'':'disabled'}>↩︎ Jour prévu (${esc(fmtDate(s.date))})</button>
       </div>
     </section>
 
@@ -971,15 +999,23 @@ function attachDetailHandlers(id){
   });
   root.querySelectorAll('[data-f]').forEach(inp=>{
     inp.oninput=()=>{
-      const en=entry(id); const f=inp.dataset.f;
-      if(inp.value==='' && f==='movedAt') delete en.movedAt; else en[f]=inp.value;
-      save();
+      const en=entry(id); en[inp.dataset.f]=inp.value; save();
       const tag=root.querySelector('.saved-tag');
       tag.classList.add('show'); clearTimeout(tag._t);
       tag._t=setTimeout(()=>tag.classList.remove('show'),1200);
-      if(f==='movedAt') renderDetail(id);   // refresh hero date + badge
     };
   });
+  // Reschedule controls (−1j / +1j / aujourd'hui / rétablir / date picker)
+  const sObj=sessions.find(x=>x.id===id);
+  const applyResched=iso=>{ const en=entry(id); if(!iso||iso===sObj.date) delete en.movedAt; else en.movedAt=iso; save(); renderDetail(id); };
+  root.querySelectorAll('[data-resched]').forEach(b=>{ if(b.disabled) return;
+    b.onclick=()=>{ const v=b.dataset.resched;
+      if(v==='reset') return applyResched(null);
+      if(v==='today') return applyResched(TODAY);
+      applyResched(shiftDate((log[id]||{}).movedAt||sObj.date, +v));
+    };
+  });
+  const di=root.querySelector('#f-movedAt'); if(di) di.onchange=()=>applyResched(di.value);
 }
 
 /* ---------------- Bottom navigation bar (mobile, thumb zone) ---------------- */
@@ -1002,7 +1038,7 @@ function renderBotbar(mode,id){
       <button data-bb="today"><span aria-hidden="true">📍</span>Aujourd'hui</button>`;
     bar.querySelector('[data-bb="list"]').onclick=()=>setView('list');
     bar.querySelector('[data-bb="cal"]').onclick=()=>setView('cal');
-    bar.querySelector('[data-bb="today"]').onclick=scrollToToday;
+    bar.querySelector('[data-bb="today"]').onclick=goToday;
   }
 }
 function setView(v){ viewMode=v; localStorage.setItem('hyrox-viewmode',v); render(); renderBotbar('list'); }
