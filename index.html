@@ -35,7 +35,7 @@
   header{
     background:linear-gradient(135deg,#1a1009 0%,#0d1117 55%);
     border-bottom:1px solid var(--line);
-    padding:max(26px,calc(env(safe-area-inset-top) + 16px)) 0 22px;
+    padding:calc(env(safe-area-inset-top) + 28px) 0 22px;
     position:relative;overflow:hidden;
   }
   header::before{
@@ -159,7 +159,7 @@
   footer{text-align:center;color:var(--txt-mut);font-size:12px;margin-top:40px}
 
   /* ---------- Session detail page ---------- */
-  #detailView{padding-top:18px}
+  #detailView{padding-top:calc(env(safe-area-inset-top) + 24px)}
   .detail{padding-bottom:30px}
   .detail-nav{display:flex;align-items:center;gap:8px;margin-bottom:18px}
   .detail-hero{display:flex;gap:16px;align-items:flex-start;
