@@ -21,17 +21,24 @@ const path = require("path");
 const HEADER = "Date,Jour,Semaine,Bloc,Focus semaine,Type séance,Séance prévue,Durée prévue,RPE cible,Priorité,Fait ?,Durée réelle,RPE réel,Sommeil /10,Fatigue jambes /10,Douleur /10,Golf joué ?,Score ou ressenti golf,Notes / splits";
 const JOURS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 
-// ---- Run paces calibrated to the race goal -------------------------------------------
-// Goal: HYROX Solo Open in 1h00. The race is 8x1 km run (~8 km) + 8 stations + roxzone.
-// Budget for 60:00 ≈ 34 min running (8 km @ ~4:15/km) + ~26 min stations & transitions.
-// So target race-run pace = 4:15/km; threshold sits a touch faster, intervals faster still.
-// To re-tune for a different goal, change these and re-run the script.
+// ---- Run paces calibrated to CURRENT fitness, with progression -----------------------
+// Athlete now: 10 km piste en 45:00 (4:30/km frais). Goal: HYROX Solo Open viser 1h00.
+// Reality: in-race 1 km runs are run on fatigued legs, ~20-25 s/km slower than fresh 10K.
+// So we PROGRESS the engine across blocks (threshold + 10K work pull the 10K toward ~43:00)
+// and tighten the HYROX race-pace target toward 4:30/km (8 km ≈ 36 min). Sub-60 then needs
+// stations + roxzone ≈ 24-26 min — ambitious; realistic first-race window ~62-65 min.
+// Change these and re-run the script to re-tune.
 const GOAL = "1h00";
 const PACE = {
-  race:  "4:15/km",   // allure course HYROX visée  (1 km 4:15 · 800 m 3:24 · 2 km 8:30)
-  seuil: "4:00/km",   // seuil / allure 10 km        (1 km 4:00 · 800 m 3:12 · 2 km 8:00 · 1200 m 4:48)
-  z2:    "5:15-5:45/km", // endurance facile, conversationnelle
+  z2:    "5:30-6:00/km",                 // endurance facile, conversationnelle
+  // threshold/tempo eases faster as fitness improves (Bloc 1 → 2 → 3)
+  seuil: { 1: "4:40/km", 2: "4:35/km", 3: "4:30/km" },
+  dixk:  "4:25/km",                      // allure 10 km / intervalles
+  // HYROX race-run target (jambes fatiguées), se resserre vers la course
+  race:  { 1: "4:50/km", 2: "4:45/km", 3: "4:35/km", 4: "4:30/km" },
 };
+const seuilP = w => PACE.seuil[w <= 4 ? 1 : w <= 8 ? 2 : 3];
+const raceP  = w => PACE.race[w <= 4 ? 1 : w <= 8 ? 2 : w <= 12 ? 3 : 4];
 
 function block(w) {
   if (w <= 4)  return ["Bloc 1 - Base moteur + force jambes", "Zone 2, force lourde, technique stations"];
@@ -61,19 +68,19 @@ const leg = {
 
 // ---- Mercredi · Running seuil / intervalles (course PURE, pas de stations) ----
 const run = {
-  1:  [`Échauffement 15 min + éducatifs 4x60 m + 6x800 m allure 10 km ${PACE.seuil} (800 m en ~3:12), récup 2 min trot + 8 min retour au calme`, "50-65 min", "7-8", `Objectif ${GOAL}: tenir ~3:12 au 800 m. Noter le split moyen`],
-  2:  [`Échauffement 15 min + 7x800 m allure 10 km ${PACE.seuil} (~3:12), récup 2 min trot + 8 min easy`, "50-65 min", "7-8", "Régularité des splits, même temps du 1er au dernier"],
-  3:  [`Échauffement 15 min + 4x1200 m allure seuil ${PACE.seuil} (1200 m en ~4:48), récup 2 min 30 + 8 min easy`, "50-65 min", "7-8", "Allure contrôlée, pas de sprint"],
+  1:  [`Échauffement 15 min + éducatifs 4x60 m + 6x800 m allure 10 km ${PACE.dixk} (800 m en ~3:32), récup 2 min trot + 8 min retour au calme`, "50-65 min", "7-8", `10 km actuel 45:00 (4:30/km). On part d'ici pour progresser. Noter le split moyen`],
+  2:  [`Échauffement 15 min + 7x800 m allure 10 km ${PACE.dixk} (~3:32), récup 2 min trot + 8 min easy`, "50-65 min", "7-8", "Régularité des splits, même temps du 1er au dernier"],
+  3:  [`Échauffement 15 min + 4x1200 m allure seuil ${seuilP(3)} (1200 m en ~5:36), récup 2 min 30 + 8 min easy`, "50-65 min", "7-8", "Allure contrôlée, pas de sprint"],
   4:  ["Décharge: Échauffement 12 min + 6x400 m souple, récup 90s + 10 min easy", "40-50 min", "5-6", "Vivacité sans fatigue"],
-  5:  [`Échauffement 15 min + 3x2 km allure seuil ${PACE.seuil} (2 km en ~8:00), récup 3 min + 6x100 m relâchés`, "55-70 min", "7-8", "Seuil: finir capable d'une rep de plus"],
-  6:  [`Échauffement 15 min + 2x3 km allure seuil ${PACE.seuil} (3 km en ~12:00), récup 3 min + 6x100 m`, "55-70 min", "7-8", "Seuil prolongé, allure régulière"],
-  7:  [`Échauffement 15 min + 5x1 km allure seuil ${PACE.seuil} (1 km en ~4:00), récup 2 min + 6x100 m`, "55-70 min", "7-8", "Splits réguliers ~4:00"],
+  5:  [`Échauffement 15 min + 3x2 km allure seuil ${seuilP(5)} (2 km en ~9:10), récup 3 min + 6x100 m relâchés`, "55-70 min", "7-8", "Seuil: finir capable d'une rep de plus"],
+  6:  [`Échauffement 15 min + 2x3 km allure seuil ${seuilP(6)} (3 km en ~13:45), récup 3 min + 6x100 m`, "55-70 min", "7-8", "Seuil prolongé, allure régulière"],
+  7:  [`Échauffement 15 min + 5x1 km allure 10 km ${PACE.dixk} (1 km en ~4:25), récup 2 min + 6x100 m`, "55-70 min", "7-8", "Le 10 km doit commencer à descendre sous 45:00"],
   8:  ["Décharge: Échauffement 12 min + 6x400 m souple, récup 90s + 10 min easy", "40-50 min", "5-6", "Décharge"],
-  9:  [`Échauffement 15 min + 5x1 km allure course HYROX ${PACE.race} (1 km en ~4:15), récup 1 min + 8 min easy`, "50-65 min", "7-8", `Allure ${PACE.race} = allure des 8 km du jour J (objectif ${GOAL}). 8 km ≈ 34 min, le reste pour les stations`],
-  10: [`Échauffement 15 min + 6x1 km allure course HYROX ${PACE.race} (~4:15), récup 1 min + 6 min easy`, "55-70 min", "8", "Tenir 4:15 jusqu'au dernier, sans accélérer"],
-  11: [`Échauffement 15 min + 3x2 km allure course HYROX ${PACE.race} (2 km en ~8:30), récup 2 min + 6x100 m`, "55-70 min", "7-8", "Allure course sur portions longues (grosse sim samedi)"],
+  9:  [`Échauffement 15 min + 5x1 km allure course HYROX ${raceP(9)} (1 km en ~4:35), récup 1 min + 8 min easy`, "50-65 min", "7-8", `${raceP(9)} = allure cible des 8 km du jour J. 8 km ≈ 37 min, le reste pour stations + roxzone`],
+  10: [`Échauffement 15 min + 6x1 km allure course HYROX ${raceP(10)} (~4:35), récup 1 min + 6 min easy`, "55-70 min", "8", `Tenir ${raceP(10)} jusqu'au dernier, sans accélérer`],
+  11: [`Échauffement 15 min + 3x2 km allure course HYROX ${raceP(11)} (2 km en ~9:10), récup 2 min + 6x100 m`, "55-70 min", "7-8", "Allure course sur portions longues (grosse sim samedi)"],
   12: ["Décharge: Échauffement 12 min + 5x400 m souple, récup 90s + 8 min easy", "40-50 min", "5-6", "Décharge avant taper"],
-  13: [`Taper: Échauffement 12 min + 4x1 km allure course HYROX ${PACE.race} (~4:15), récup 90s + 4x80 m vifs`, "40-50 min", "6-7", "Affûtage: ancrer 4:15/km, rester frais"],
+  13: [`Taper: Échauffement 12 min + 4x1 km allure course HYROX ${raceP(13)} (~4:30), récup 90s + 4x80 m vifs`, "40-50 min", "6-7", `Affûtage: ancrer ${raceP(13)}, rester frais`],
   14: ["Activation: Échauffement 12 min + 3x1 min allure course, récup 2 min + 4x100 m relâchés", "30-40 min", "4-5", "Activation, zéro dette lactique"],
 };
 
@@ -101,18 +108,18 @@ const hyrox = {
   2:  ["4 tours: 1 km run + SkiErg 500 m + 20 wall balls 6 kg cible 3 m + 20 sandbag lunges 20 kg. Pacing régulier", "55-65 min", "6-7", "Noter splits run et stations"],
   3:  ["4 tours: 1 km run + row 500 m + 12 burpee broad jumps + 20 wall balls 6 kg. Transitions propres", "55-70 min", "7", "Introduit row + burpees broad jumps"],
   4:  ["Décharge — mini-Hyrox 3 tours faciles: 800 m run + SkiErg 250 m + 15 wall balls 6 kg + farmer carry 40 m 2x24 kg. Récup complète", "40-50 min", "5-6", "Fluidité, RPE bas"],
-  5:  [`5 tours: 1 km run allure course ${PACE.race} + sled push 15 m total 135 kg + sled pull 15 m total 92 kg + row 250 m. Transitions calmes`, "65-80 min", "7-8", `Tenir ${PACE.race} sur le run malgré les jambes (objectif ${GOAL})`],
+  5:  [`5 tours: 1 km run allure course ${raceP(5)} + sled push 15 m total 135 kg + sled pull 15 m total 92 kg + row 250 m. Transitions calmes`, "65-80 min", "7-8", `Tenir ${raceP(5)} sur le run malgré les jambes (vers l'objectif ${GOAL})`],
   6:  ["5 tours: 1 km run + 12 burpee broad jumps + row 250 m + 20 wall balls 6 kg. Pacing constant", "65-80 min", "7-8", "Endurance musculaire"],
   7:  ["4 tours: 1 km run + sled push 25 m total 145 kg + sled pull 25 m total 100 kg + 15 burpee broad jumps + 25 wall balls 6 kg", "65-80 min", "7-8", "Stations lourdes enchaînées"],
   8:  ["Test 4 stations à froid mais frais + 1 km run + sled push 50 m total 130 kg + 1 km run + sled pull 50 m total 88 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + chrono continu", "65-80 min", "8", "Benchmark fin de Bloc 2: noter temps total + tous les splits"],
-  9:  [`Simulation 6 stations dans l'ordre à ~85% allure course ${PACE.race} + 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 150 kg + 1 km run + sled pull 50 m total 100 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg + chrono continu`, "85-105 min", "8", `Run à ${PACE.race}, transitions < 45 s`],
-  10: [`Back-half: répète la fin de course sous fatigue + 1 km run ${PACE.race} + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg + 1 km run + sandbag lunges 100 m 20 kg + 100 wall balls 6 kg cible 3 m en 20/20/15/15/10/10 + chrono continu`, "70-90 min", "8-9", `Lunges 100 m + 100 wall balls; garder le run à ${PACE.race} entre les stations`],
-  11: [`Simulation complète 8 stations dans l'ordre à ~90-95% allure course ${PACE.race} (run ~4:15/km) + 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 152 kg + 1 km run + sled pull 50 m total 103 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg + 1 km run + sandbag lunges 100 m 20 kg + 1 km run + 100 wall balls 6 kg cible 3 m + chrono continu`, "80-100 min", "9", `Pic de prépa: chrono cible ≈ ${GOAL}. Tester pacing ${PACE.race}, nutrition, hydratation, transitions comme le jour J`],
-  12: [`Décharge mini-sim fluide 3 tours + 800 m run allure course ${PACE.race} + SkiErg 300 m + 12 wall balls 6 kg + farmer carry 60 m 2x24 kg + récup complète`, "35-45 min", "6", "Fraîcheur, sensations, pas de mise dans le rouge"],
-  13: [`Primer course 3 tours: 800 m run allure course ${PACE.race} + SkiErg 250 m + 10 wall balls 6 kg + 8 burpee broad jumps. Récup complète, sensations de vitesse, zéro lactate`, "35-45 min", "5-6", `Affûtage J-7: ancrer ${PACE.race}`],
+  9:  [`Simulation 6 stations dans l'ordre à ~85% allure course ${raceP(9)} + 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 150 kg + 1 km run + sled pull 50 m total 100 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg + chrono continu`, "85-105 min", "8", `Run à ${raceP(9)}, transitions < 45 s. Comparer au test du Bloc 2`],
+  10: [`Back-half: répète la fin de course sous fatigue + 1 km run ${raceP(10)} + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg + 1 km run + sandbag lunges 100 m 20 kg + 100 wall balls 6 kg cible 3 m en 20/20/15/15/10/10 + chrono continu`, "70-90 min", "8-9", `Lunges 100 m + 100 wall balls; garder le run à ${raceP(10)} entre les stations`],
+  11: [`Simulation complète 8 stations dans l'ordre à ~90-95% allure course ${raceP(11)} (run ~4:35/km) + 1 km run + SkiErg 1000 m + 1 km run + sled push 50 m total 152 kg + 1 km run + sled pull 50 m total 103 kg + 1 km run + burpee broad jump 80 m + 1 km run + row 1000 m + 1 km run + farmer carry 200 m 2x24 kg + 1 km run + sandbag lunges 100 m 20 kg + 1 km run + 100 wall balls 6 kg cible 3 m + chrono continu`, "80-100 min", "9", `Pic de prépa: chrono = ta vraie projection. Pacing ${raceP(11)}, nutrition, hydratation, transitions comme le jour J`],
+  12: [`Décharge mini-sim fluide 3 tours + 800 m run allure course ${raceP(12)} + SkiErg 300 m + 12 wall balls 6 kg + farmer carry 60 m 2x24 kg + récup complète`, "35-45 min", "6", "Fraîcheur, sensations, pas de mise dans le rouge"],
+  13: [`Primer course 3 tours: 800 m run allure course ${raceP(13)} + SkiErg 250 m + 10 wall balls 6 kg + 8 burpee broad jumps. Récup complète, sensations de vitesse, zéro lactate`, "35-45 min", "5-6", `Affûtage J-7: ancrer ${raceP(13)}`],
 };
 
-const RACE = [`HYROX Bordeaux Solo Open (Men's Open) — objectif ${GOAL}. Échauffement 20 min: footing 8 min + mobilité + 3 accélérations + 8 wall balls d'activation. Plan de course: 8 runs à ${PACE.race} (8 km ≈ 34 min, ne pas partir plus vite sur Run 1-2), SkiErg régulier, sled push/pull sans arrêt long, burpees au rythme, relance progressive après Row puis Farmer, sandbag lunges en contrôle, wall balls en séries 20/20/15/15/10/10/10. ~26 min pour stations + roxzone. Hydratation + respiration.`, "90-120 min", "9-10", `Objectif ${GOAL}: viser ${PACE.race} au km. Renseigner chrono total + 8 splits 1 km + temps par station`];
+const RACE = [`HYROX Bordeaux Solo Open (Men's Open) — objectif ${GOAL}. Échauffement 20 min: footing 8 min + mobilité + 3 accélérations + 8 wall balls d'activation. Plan de course: 8 runs à ${PACE.race[4]} (8 km ≈ 36 min, ne JAMAIS partir plus vite sur Run 1-2), SkiErg régulier, sled push/pull sans arrêt long, burpees au rythme, relance progressive après Row puis Farmer, sandbag lunges en contrôle, wall balls en séries 20/20/15/15/10/10/10. Pour ${GOAL} il reste ~24 min de stations + roxzone. Hydratation + respiration.`, "90-120 min", "9-10", `Viser ${PACE.race[4]} au km. Renseigner chrono total + 8 splits 1 km + temps par station`];
 
 // ---- Constants for the easy/recovery days ----
 const golfTue = ["9 trous ou practice technique golf 60-90 min + mobilité hanches/dos 15 min + respiration 5 min. Récup active: jambes légères, pas de cardio intense", "60-120 min", "3-4", "Récupération entre lourde (lun) et intervalles (mer)"];
