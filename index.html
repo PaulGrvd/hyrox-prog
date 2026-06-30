@@ -197,18 +197,26 @@
     border-radius:12px;padding:13px 14px;transition:.15s;cursor:pointer;-webkit-user-select:none;user-select:none}
   .ex:active{background:var(--bg-soft)}
   .ex.done{background:rgba(46,160,67,.07);border-color:rgba(46,160,67,.3)}
-  .ex-check{flex-shrink:0;width:26px;height:26px;margin-top:1px;border:2px solid var(--txt-mut);
-    border-radius:7px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s}
+  .ex.skip{background:rgba(248,81,73,.06);border-color:rgba(248,81,73,.3)}
+  .ex-check{position:relative;flex-shrink:0;width:26px;height:26px;margin-top:1px;border:2px solid var(--txt-mut);
+    border-radius:7px;background:none;cursor:pointer;transition:.15s}
   .ex-check:hover{border-color:var(--type-color)}
   .ex.done .ex-check{background:var(--green);border-color:var(--green)}
-  .ex-check svg{width:14px;height:14px;opacity:0;transition:.15s}
-  .ex.done .ex-check svg{opacity:1}
+  .ex.skip .ex-check{background:var(--red);border-color:var(--red)}
+  .ex-check svg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:14px;height:14px;opacity:0;transition:.15s}
+  .ex.done .ex-check .ic-done{opacity:1}
+  .ex.skip .ex-check .ic-skip{opacity:1}
   .ex-body{flex:1;min-width:0}
   .ex-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
   .ex-tag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
     color:var(--type-color);background:var(--type-bg);padding:2px 8px;border-radius:6px}
   .ex-name{font-size:15px;font-weight:700}
   .ex.done .ex-name{text-decoration:line-through;color:var(--txt-dim)}
+  .ex.skip .ex-name{text-decoration:line-through;color:var(--red)}
+  .ex-hint{font-size:11px;color:var(--txt-mut);margin:-4px 0 10px}
+  .moved{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;
+    color:var(--yellow);background:rgba(210,153,34,.15);padding:2px 7px;border-radius:6px;margin-left:4px}
+  .moved-note{font-size:12px;color:var(--yellow);margin-top:6px}
   .mchip{font-size:12px;font-weight:700;font-variant-numeric:tabular-nums;
     background:var(--bg-soft);border:1px solid var(--line);color:var(--txt);
     padding:2px 8px;border-radius:6px;white-space:nowrap}
@@ -590,12 +598,27 @@ function passesFilter(s){
 }
 
 /* ---------------- Render program ---------------- */
-const TODAY = '2026-06-29';
+const TODAY = new Date().toLocaleDateString('en-CA'); // local YYYY-MM-DD
 
 function fmtDate(iso){
   const d=new Date(iso+'T00:00:00');
   return d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
 }
+function jourOf(iso){
+  const j=new Date(iso+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long'});
+  return j.charAt(0).toUpperCase()+j.slice(1);
+}
+function longDateOf(iso){
+  return new Date(iso+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+}
+// per-exercise step state: '' (neutral) | 'done' | 'skip' (legacy true === done)
+function stepState(v){ return (v===true||v==='done')?'done':v==='skip'?'skip':''; }
+function countSteps(steps){
+  const v=steps?Object.values(steps):[];
+  return { done:v.filter(x=>stepState(x)==='done').length, skip:v.filter(x=>x==='skip').length };
+}
+// effective (possibly rescheduled) date of a session
+function effDate(s){ const e=log[s.id]; return (e&&e.movedAt)||s.date; }
 
 function render(){
   const container=document.getElementById('program');
@@ -632,15 +655,17 @@ function cardHTML(s){
   const ts=tstyle(s.type);
   const done=e.done?'done':'';
   const race=s.type==='RACE'?'race':'';
-  const isToday = s.date===TODAY ? ' style="box-shadow:0 0 0 2px var(--accent-soft)"':'';
-  const todayTag = s.date===TODAY ? " · AUJOURD'HUI" : '';
+  const eff=effDate(s);
+  const moved=e.movedAt && e.movedAt!==s.date;
+  const isToday = eff===TODAY ? ' style="box-shadow:0 0 0 2px var(--accent-soft)"':'';
+  const todayTag = eff===TODAY ? " · AUJOURD'HUI" : '';
   const nSteps=parseSession(s).steps.length;
-  const stepsDone=(e.steps?Object.values(e.steps).filter(Boolean).length:0);
+  const stepsDone=countSteps(e.steps).done;
   return `
   <div class="card ${done} ${race}" data-id="${s.id}" style="--type-color:${ts.c};--type-bg:${ts.bg}"${isToday}>
     <div class="card-top" data-go>
       <div class="card-meta">
-        <span class="date">${ts.ic} ${fmtDate(s.date)} · ${s.jour}${todayTag}</span>
+        <span class="date">${ts.ic} ${fmtDate(eff)} · ${moved?jourOf(eff):s.jour}${moved?'<span class="moved">déplacé</span>':''}${todayTag}</span>
         <span class="badges">
           <span class="chip type">${esc(s.type)}</span>
           <span class="chip pri-${s.priorite}">${s.priorite}</span>
@@ -677,10 +702,12 @@ function attachHandlers(){
 }
 
 /* ---------------- Session detail page ---------------- */
-function exHTML(st,i,done){
+function exHTML(st,i,state){
   const chips=st.chips.map(c=>`<span class="mchip">${esc(prettyChip(c))}</span>`).join('');
-  return `<div class="ex ${done?'done':''}" data-step="${i}">
-    <button class="ex-check" data-check="${i}" aria-label="Cocher"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></button>
+  const checkSvg='<svg class="ic-done" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>'+
+                 '<svg class="ic-skip" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>';
+  return `<div class="ex ${state}" data-step="${i}">
+    <button class="ex-check" aria-label="Marquer">${checkSvg}</button>
     <div class="ex-body">
       <div class="ex-head">
         ${st.label?`<span class="ex-tag">${esc(st.label)}</span>`:''}
@@ -691,6 +718,10 @@ function exHTML(st,i,done){
     </div>
   </div>`;
 }
+function stepCountText(steps,total){
+  const c=countSteps(steps);
+  return `${c.done}/${total}`+(c.skip?` · ${c.skip} non fait${c.skip>1?'s':''}`:'');
+}
 
 function renderDetail(id){
   const s=sessions.find(x=>x.id===id);
@@ -699,9 +730,10 @@ function renderDetail(id){
   const p=parseSession(s);
   const idx=sessions.findIndex(x=>x.id===id);
   const prev=sessions[idx-1], next=sessions[idx+1];
-  const stepsDone=e.steps||{};
-  const nDone=p.steps.filter((_,i)=>stepsDone[i]).length;
-  const longDate=new Date(s.date+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  const steps=e.steps||{};
+  const eff=e.movedAt||s.date;
+  const moved=e.movedAt && e.movedAt!==s.date;
+  const longDate=longDateOf(eff);
   const tickSvg='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
 
   document.getElementById('detailView').innerHTML=`
@@ -716,10 +748,11 @@ function renderDetail(id){
     <div class="detail-hero">
       <div class="dh-icon">${ts.ic}</div>
       <div>
-        <span class="chip type dh-type">${esc(s.type)}</span>
+        <span class="chip type dh-type">${esc(s.type)}</span>${moved?'<span class="moved">déplacé</span>':''}
         <h2>${esc(longDate)}</h2>
         <div class="dh-meta">Semaine ${s.semaine} · ${esc(s.bloc)}</div>
         <div class="dh-focus">${esc(s.focus)}</div>
+        ${moved?`<div class="moved-note">↪ Reprogrammée — prévue à l'origine ${esc(longDateOf(s.date))}</div>`:''}
       </div>
     </div>
 
@@ -734,8 +767,9 @@ function renderDetail(id){
     </div>
 
     <section>
-      <h3 class="sec-title">Déroulé de la séance <span class="step-count">${nDone}/${p.steps.length}</span></h3>
-      <div class="ex-list">${p.steps.map((st,i)=>exHTML(st,i,stepsDone[i])).join('')}</div>
+      <h3 class="sec-title">Déroulé de la séance <span class="step-count">${stepCountText(steps,p.steps.length)}</span></h3>
+      <div class="ex-hint">Touchez un exercice : 1× fait ✓ · 2× non fait ✗ · 3× annuler</div>
+      <div class="ex-list">${p.steps.map((st,i)=>exHTML(st,i,stepState(steps[i]))).join('')}</div>
     </section>
 
     ${p.technique?`<div class="callout tech"><div class="co-h">📐 Points techniques</div><div>${esc(p.technique)}</div></div>`:''}
@@ -752,6 +786,7 @@ function renderDetail(id){
         <div class="field"><label>Golf joué ?</label><select data-f="golf"><option value="">—</option><option ${e.golf==='Oui'?'selected':''}>Oui</option><option ${e.golf==='Non'?'selected':''}>Non</option></select></div>
         <div class="field full"><label>Score / ressenti golf</label><input type="text" data-f="golfScore" value="${esc(e.golfScore||'')}" placeholder="Score, sensations…"></div>
         <div class="field full"><label>Notes / splits</label><textarea data-f="userNotes" placeholder="Tes splits, sensations, ajustements…">${esc(e.userNotes||'')}</textarea></div>
+        <div class="field full"><label>Déplacer la séance au (laisser vide = jour prévu)</label><input type="date" data-f="movedAt" value="${esc(e.movedAt||'')}"></div>
       </div>
     </section>
 
@@ -775,20 +810,26 @@ function attachDetailHandlers(id){
   });
   root.querySelector('[data-done]').onclick=()=>{ const en=entry(id); en.done=!en.done; save(); renderDetail(id); };
   const totSteps=parseSession(sessions.find(x=>x.id===id)).steps.length;
-  root.querySelectorAll('.ex').forEach(row=>{        // whole row is the tap target
+  root.querySelectorAll('.ex').forEach(row=>{        // whole row taps through: neutral → fait → non fait → neutral
     row.onclick=()=>{
-      const i=+row.dataset.step; const en=entry(id); en.steps=en.steps||{}; en.steps[i]=!en.steps[i]; save();
-      row.classList.toggle('done', !!en.steps[i]);
-      const nd=Object.values(en.steps).filter(Boolean).length;
-      root.querySelector('.step-count').textContent=nd+'/'+totSteps;
+      const i=+row.dataset.step; const en=entry(id); en.steps=en.steps||{};
+      const cur=stepState(en.steps[i]);
+      const nxt=cur===''?'done':cur==='done'?'skip':'';
+      if(nxt==='') delete en.steps[i]; else en.steps[i]=nxt;
+      save();
+      row.classList.remove('done','skip'); if(nxt) row.classList.add(nxt);
+      root.querySelector('.step-count').textContent=stepCountText(en.steps,totSteps);
     };
   });
   root.querySelectorAll('[data-f]').forEach(inp=>{
     inp.oninput=()=>{
-      const en=entry(id); en[inp.dataset.f]=inp.value; save();
+      const en=entry(id); const f=inp.dataset.f;
+      if(inp.value==='' && f==='movedAt') delete en.movedAt; else en[f]=inp.value;
+      save();
       const tag=root.querySelector('.saved-tag');
       tag.classList.add('show'); clearTimeout(tag._t);
       tag._t=setTimeout(()=>tag.classList.remove('show'),1200);
+      if(f==='movedAt') renderDetail(id);   // refresh hero date + badge
     };
   });
 }
