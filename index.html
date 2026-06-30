@@ -60,6 +60,15 @@
   .stat{background:var(--bg-card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
   .stat .v{font-size:24px;font-weight:800}
   .stat .k{font-size:12px;color:var(--txt-dim);margin-top:2px}
+  .goal-card{margin-top:18px;background:var(--bg-card);border:1px solid var(--line);
+    border-left:4px solid var(--accent);border-radius:var(--radius);padding:14px 16px}
+  .goal-head{font-size:13px;color:var(--txt-dim);font-weight:600;margin-bottom:11px}
+  .goal-head b{color:var(--accent-soft);font-weight:800}
+  .goal-figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:12px}
+  .gf-v{font-size:22px;font-weight:800}
+  .gf-v span{font-size:12px;color:var(--txt-mut);font-weight:600;margin-left:2px}
+  .gf-k{font-size:11px;color:var(--txt-dim);margin-top:2px}
+  .goal-note{font-size:11px;color:var(--txt-mut);margin-top:11px;line-height:1.5}
   .progress-wrap{margin-top:18px}
   .progress-head{display:flex;justify-content:space-between;font-size:13px;color:var(--txt-dim);margin-bottom:6px}
   .progress-bar{height:12px;background:var(--bg-soft);border:1px solid var(--line);border-radius:99px;overflow:hidden}
@@ -309,6 +318,17 @@
     <div class="sub">Solo Open · Course le <strong id="raceDate"></strong></div>
 
     <div class="countdown" id="countdown"></div>
+
+    <div class="goal-card">
+      <div class="goal-head">🎯 Objectif course — <b>HYROX 1h00</b></div>
+      <div class="goal-figs">
+        <div class="gf"><div class="gf-v">4:30<span>/km</span></div><div class="gf-k">Allure course cible</div></div>
+        <div class="gf"><div class="gf-v">~36<span>min</span></div><div class="gf-k">Course · 8 km</div></div>
+        <div class="gf"><div class="gf-v">~24<span>min</span></div><div class="gf-k">Stations + roxzone</div></div>
+        <div class="gf"><div class="gf-v">62–66<span>min</span></div><div class="gf-k">Projection réaliste</div></div>
+      </div>
+      <div class="goal-note">10 km actuel 45:00 → cible ~43:00. Réévaluation après le test S8 (22 août) et la simulation complète S11 (12 sept).</div>
+    </div>
 
     <div class="progress-wrap">
       <div class="progress-head">
